@@ -47,3 +47,18 @@ def get_user_by_id(connection: sqlite3.Connection, *, user_id: int) -> sqlite3.R
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
     return user
+
+
+def update_user_password(
+    connection: sqlite3.Connection,
+    *,
+    user_id: int,
+    new_password: str,
+) -> None:
+    cursor = connection.execute(
+        "UPDATE users SET password_hash = ? WHERE id = ?",
+        (hash_password(new_password), user_id),
+    )
+    connection.commit()
+    if cursor.rowcount == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")

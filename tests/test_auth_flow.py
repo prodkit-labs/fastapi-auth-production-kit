@@ -14,6 +14,8 @@ def make_client(tmp_path: Path) -> TestClient:
             AUTH_DATABASE_PATH=str(tmp_path / "auth.sqlite3"),
             AUTH_SECRET_KEY="test-secret",
             AUTH_ACCESS_TOKEN_MINUTES=15,
+            AUTH_PASSWORD_RESET_TOKEN_MINUTES=15,
+            AUTH_EXPOSE_RESET_TOKEN=True,
         )
 
     app.dependency_overrides[get_settings] = settings_override
@@ -66,5 +68,90 @@ def test_protected_route_requires_token(tmp_path: Path) -> None:
     client = make_client(tmp_path)
 
     response = client.get("/me")
+
+    assert response.status_code == 401
+
+
+def test_password_reset_changes_password(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    new_password = "new correct horse battery staple"
+    client.post("/auth/register", json=credentials)
+
+    request_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
+    assert request_response.status_code == 200
+    reset_token = request_response.json()["reset_token"]
+    assert reset_token
+
+    confirm_response = client.post(
+        "/auth/password-reset/confirm",
+        json={"token": reset_token, "new_password": new_password},
+    )
+    assert confirm_response.status_code == 204
+
+    old_login = client.post("/auth/login", json=credentials)
+    assert old_login.status_code == 401
+
+    new_login = client.post(
+        "/auth/login",
+        json={"email": credentials["email"], "password": new_password},
+    )
+    assert new_login.status_code == 200
+
+
+def test_password_reset_request_does_not_error_for_unknown_email(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+
+    response = client.post(
+        "/auth/password-reset/request",
+        json={"email": "missing@example.com"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["reset_token"] is None
+
+
+def test_password_reset_rejects_invalid_token(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+
+    response = client.post(
+        "/auth/password-reset/confirm",
+        json={"token": "not-a-valid-token", "new_password": "new correct horse battery staple"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_password_reset_rejects_expired_token(tmp_path: Path) -> None:
+    app = create_app()
+
+    def settings_override() -> Settings:
+        return Settings(
+            AUTH_DATABASE_PATH=str(tmp_path / "auth.sqlite3"),
+            AUTH_SECRET_KEY="test-secret",
+            AUTH_ACCESS_TOKEN_MINUTES=15,
+            AUTH_PASSWORD_RESET_TOKEN_MINUTES=-1,
+            AUTH_EXPOSE_RESET_TOKEN=True,
+        )
+
+    app.dependency_overrides[get_settings] = settings_override
+    client = TestClient(app)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
+
+    response = client.post(
+        "/auth/password-reset/confirm",
+        json={
+            "token": request_response.json()["reset_token"],
+            "new_password": "new correct horse battery staple",
+        },
+    )
 
     assert response.status_code == 401

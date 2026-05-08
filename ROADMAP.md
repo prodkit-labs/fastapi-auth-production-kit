@@ -4,6 +4,7 @@
 
 - Local email/password auth
 - JWT access tokens
+- Password reset with signed expiring tokens
 - Protected route
 - SQLite persistence
 - Test coverage
@@ -11,7 +12,6 @@
 
 ## Next
 
-- Password reset example
 - Email verification example
 - Refresh-token rotation example
 - SQLAlchemy/Postgres track

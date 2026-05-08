@@ -24,7 +24,8 @@ Ships today:
 - JWT access tokens with `python-jose`
 - Protected `/me` route
 - Environment-driven settings
-- Pytest coverage for register, login, duplicate users, and protected routes
+- Password reset flow with signed expiring tokens
+- Pytest coverage for register, login, password reset, duplicate users, and protected routes
 - Production docs for deployment, provider comparison, security checklist, and disclosure
 
 ## Quickstart
@@ -60,11 +61,29 @@ curl -s http://127.0.0.1:8000/me \
   -H "authorization: Bearer $ACCESS_TOKEN"
 ```
 
+Request a password reset token for local development:
+
+```bash
+curl -s http://127.0.0.1:8000/auth/password-reset/request \
+  -H 'content-type: application/json' \
+  -d '{"email":"dev@example.com"}'
+```
+
+Confirm the reset:
+
+```bash
+curl -i http://127.0.0.1:8000/auth/password-reset/confirm \
+  -H 'content-type: application/json' \
+  -d '{"token":"RESET_TOKEN","new_password":"new correct horse battery staple"}'
+```
+
+The request endpoint returns `reset_token` by default so the local example is runnable without an email provider. Set `AUTH_EXPOSE_RESET_TOKEN=false` before adapting the flow for production email delivery.
+
 ## What You Can Run Today
 
 | Workflow | Command | Output |
 |---|---|---|
-| Test auth flow | `pytest` | Register/login/protected-route coverage |
+| Test auth flow | `pytest` | Register/login/password-reset/protected-route coverage |
 | Run API locally | `uvicorn prodkit_auth.main:app --reload` | Local FastAPI server |
 | Inspect OpenAPI | Open `/docs` | Interactive route docs |
 

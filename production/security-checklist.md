@@ -10,6 +10,10 @@ Use this checklist before adapting the kit for a real product.
 - Add rate limits to login and register routes.
 - Add structured audit events for login attempts and account changes.
 - Add password reset flows only with signed, expiring tokens.
+- Set `AUTH_EXPOSE_RESET_TOKEN=false` outside local development.
+- Send reset links through an email service you can monitor.
+- Use a generic password reset response so requests do not reveal account existence.
+- Add resend limits and abuse monitoring for password reset requests.
 - Review session lifetime and refresh-token needs for your product.
 - Add monitoring for spikes in failed login attempts.
 - Run dependency scanning in CI.
