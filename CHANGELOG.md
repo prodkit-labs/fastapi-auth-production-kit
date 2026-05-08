@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added repository security policy and LF formatting rules.
+- Added `AUTH_ENV=production` guard for unsafe local defaults.
+- Added bcrypt 72-byte password input enforcement.
+- Added token strategy and provider evidence notes.
 - Added optional SQLAlchemy/Postgres track with model, session pattern, production docs, and local SQLite-backed tests.
 
 ## v0.1.0 - Initial runnable auth kit

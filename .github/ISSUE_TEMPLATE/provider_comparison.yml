@@ -1,0 +1,30 @@
+name: Provider comparison
+description: Suggest a hosted auth, database, email, or deployment provider comparison.
+title: "[Provider comparison]: "
+labels: ["type: docs", "area: provider-comparison"]
+body:
+  - type: input
+    id: provider
+    attributes:
+      label: Provider or category
+      placeholder: Clerk, Auth0, Supabase Auth, Logto, Resend, Neon, Railway
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Production decision
+      description: What decision would this help a developer make?
+    validations:
+      required: true
+  - type: dropdown
+    id: evidence
+    attributes:
+      label: Evidence level
+      options:
+        - not tested
+        - documented
+        - locally tested
+        - benchmarked
+    validations:
+      required: true

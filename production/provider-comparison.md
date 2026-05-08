@@ -12,6 +12,14 @@ Hosted auth can make sense when your product needs social login, enterprise iden
 | Supabase Auth | Apps already using Supabase | Platform coupling | Email settings, RLS design, migration path |
 | Logto | Open-source friendly identity platform | Extra service to operate or host | Deployment, upgrades, integration maturity |
 
+## Evidence Labels
+
+- `local`: covered by this repository's runnable examples.
+- `documented`: covered by public provider documentation.
+- `not tested`: listed as a decision option, but no benchmark or integration evidence has been added.
+
 ## Commercial Links
 
-Affiliate or partner links may be added here only when they are tied to a real production decision and include nearby disclosure. Do not add rankings without reproducible comparison data.
+Affiliate or partner links may be added here only when they are tied to a real production decision and include nearby disclosure.
+
+Do not add rankings without reproducible comparison data.

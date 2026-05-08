@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 
+from prodkit_auth.config import get_settings, validate_production_settings
 from prodkit_auth.routes import router
 
 
 def create_app() -> FastAPI:
+    validate_production_settings(get_settings())
     app = FastAPI(
         title="FastAPI Auth Production Kit",
         version="0.1.0",

@@ -1,0 +1,22 @@
+name: Security hardening
+description: Propose a security hardening improvement. Do not disclose vulnerabilities here.
+title: "[Security hardening]: "
+labels: ["type: enhancement", "area: security"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not use public issues for exploit details or active vulnerabilities. Follow SECURITY.md instead."
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk or hardening gap
+      description: What risk does this reduce?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed change
+      description: What should change in code, docs, or tests?
+    validations:
+      required: true

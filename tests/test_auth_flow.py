@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from prodkit_auth.config import Settings, get_settings
+from prodkit_auth.config import Settings, get_settings, validate_production_settings
 from prodkit_auth.main import create_app
 
 
@@ -56,6 +56,17 @@ def test_duplicate_email_returns_conflict(tmp_path: Path) -> None:
     response = client.post("/auth/register", json=credentials)
 
     assert response.status_code == 409
+
+
+def test_register_rejects_password_over_bcrypt_byte_limit(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+
+    response = client.post(
+        "/auth/register",
+        json={"email": "dev@example.com", "password": "x" * 73},
+    )
+
+    assert response.status_code == 422
 
 
 def test_login_rejects_bad_password(tmp_path: Path) -> None:
@@ -248,6 +259,23 @@ def test_password_reset_rejects_invalid_token(tmp_path: Path) -> None:
     assert response.status_code == 401
 
 
+def test_password_reset_rejects_new_password_over_bcrypt_byte_limit(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
+
+    response = client.post(
+        "/auth/password-reset/confirm",
+        json={"token": request_response.json()["reset_token"], "new_password": "x" * 73},
+    )
+
+    assert response.status_code == 422
+
+
 def test_password_reset_rejects_expired_token(tmp_path: Path) -> None:
     app = create_app()
 
@@ -278,3 +306,30 @@ def test_password_reset_rejects_expired_token(tmp_path: Path) -> None:
     )
 
     assert response.status_code == 401
+
+
+def test_production_settings_reject_unsafe_defaults() -> None:
+    unsafe_settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="dev-only-change-me",
+        AUTH_EXPOSE_RESET_TOKEN=True,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=True,
+    )
+
+    try:
+        validate_production_settings(unsafe_settings)
+    except RuntimeError as exc:
+        assert "AUTH_SECRET_KEY" in str(exc)
+    else:
+        raise AssertionError("Expected production settings to reject default secret.")
+
+
+def test_production_settings_accept_safe_values() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+    )
+
+    validate_production_settings(settings)

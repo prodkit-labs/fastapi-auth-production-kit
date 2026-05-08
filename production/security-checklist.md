@@ -5,6 +5,7 @@ Use this checklist before adapting the kit for a real product.
 ## Required
 
 - Set a long random `AUTH_SECRET_KEY` outside source control.
+- Set `AUTH_ENV=production` and confirm startup rejects unsafe local defaults.
 - Use HTTPS in every non-local environment.
 - Store production data in a managed database with backups.
 - Add rate limits to login and register routes.
@@ -19,6 +20,8 @@ Use this checklist before adapting the kit for a real product.
 - Use a generic password reset response so requests do not reveal account existence.
 - Add resend limits and abuse monitoring for password reset requests.
 - Review session lifetime and refresh-token needs for your product.
+- Review [token strategy](token-strategy.md) before relying on stateless reset or verification tokens.
+- Enforce bcrypt's 72-byte input limit or move to an Argon2id hashing track.
 - Add monitoring for spikes in failed login attempts.
 - Run dependency scanning in CI.
 

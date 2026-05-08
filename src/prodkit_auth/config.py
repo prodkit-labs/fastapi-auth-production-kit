@@ -1,10 +1,15 @@
 from functools import lru_cache
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    environment: Literal["local", "staging", "production"] = Field(
+        default="local",
+        alias="AUTH_ENV",
+    )
     database_path: str = Field(default="./prodkit-auth.sqlite3", alias="AUTH_DATABASE_PATH")
     database_url: str | None = Field(default=None, alias="AUTH_DATABASE_URL")
     secret_key: str = Field(default="dev-only-change-me", alias="AUTH_SECRET_KEY")
@@ -34,3 +39,17 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def validate_production_settings(settings: Settings) -> None:
+    if settings.environment != "production":
+        return
+
+    if settings.secret_key in {"dev-only-change-me", "change-me-before-production"}:
+        raise RuntimeError("AUTH_SECRET_KEY must be changed in production.")
+
+    if settings.expose_reset_token:
+        raise RuntimeError("AUTH_EXPOSE_RESET_TOKEN must be false in production.")
+
+    if settings.expose_email_verification_token:
+        raise RuntimeError("AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN must be false in production.")

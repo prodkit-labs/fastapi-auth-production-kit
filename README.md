@@ -7,7 +7,9 @@
 
 A FastAPI starter for building authentication that survives the first production handoff.
 
-Most auth examples stop at "register and login." This repo focuses on what teams need next: password hashing, JWT access tokens, route protection, SQLite persistence, testable settings, deployment notes, and decision guides for when to use hosted auth instead.
+Most auth examples stop at "register and login."
+
+This repo focuses on what teams need next: password hashing, JWT access tokens, route protection, SQLite persistence, testable settings, deployment notes, and decision guides for when to use hosted auth instead.
 
 This kit helps you answer:
 
@@ -25,6 +27,7 @@ Ships today:
 - JWT access tokens with `python-jose`
 - Protected `/me` route
 - Environment-driven settings
+- Production settings guard for unsafe local defaults
 - Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
 - Pytest coverage for register, login, email verification, password reset, duplicate users, and protected routes
@@ -126,6 +129,7 @@ src/prodkit_auth/
 
 - [Security checklist](production/security-checklist.md)
 - [Deployment](production/deployment.md)
+- [Token strategy](production/token-strategy.md)
 - [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)
 - [Disclosure policy](production/disclosure.md)

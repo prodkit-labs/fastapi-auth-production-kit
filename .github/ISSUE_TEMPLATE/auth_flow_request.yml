@@ -1,0 +1,26 @@
+name: Auth flow request
+description: Request a new local auth workflow or production handoff guide.
+title: "[Auth flow]: "
+labels: ["type: enhancement", "area: auth-flow"]
+body:
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Workflow
+      description: What auth flow should be added?
+    validations:
+      required: true
+  - type: textarea
+    id: local
+    attributes:
+      label: Local runnable path
+      description: How should this work without paid services?
+    validations:
+      required: true
+  - type: textarea
+    id: production
+    attributes:
+      label: Production hardening notes
+      description: What would need to change before production use?
+    validations:
+      required: true
