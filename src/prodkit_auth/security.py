@@ -5,6 +5,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+argon2id_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
@@ -13,6 +14,20 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, password_hash: str) -> bool:
     return password_context.verify(password, password_hash)
+
+
+def hash_password_argon2id(password: str) -> str:
+    return argon2id_context.hash(password)
+
+
+def verify_password_argon2id(password: str, password_hash: str) -> bool:
+    return argon2id_context.verify(password, password_hash)
+
+
+def verify_password_any(password: str, password_hash: str) -> bool:
+    if password_hash.startswith("$argon2"):
+        return verify_password_argon2id(password, password_hash)
+    return verify_password(password, password_hash)
 
 
 def create_access_token(

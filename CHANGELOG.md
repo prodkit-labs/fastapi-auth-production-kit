@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added optional Argon2id password hashing track and password hashing guide.
 - Added repository security policy and LF formatting rules.
 - Added `AUTH_ENV=production` guard for unsafe local defaults.
 - Added bcrypt 72-byte password input enforcement.

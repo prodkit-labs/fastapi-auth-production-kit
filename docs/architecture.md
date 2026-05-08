@@ -18,3 +18,5 @@ Email verification and password reset use separate JWT purpose claims so access 
 The starter keeps login available for unverified users by default so the quickstart stays simple. Set `AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=true` when your product should block login until verification is complete.
 
 The SQLAlchemy track is kept separate from the default app so local SQLite remains easy to inspect. Use `production/sqlalchemy-postgres.md` when you are ready to move auth data into managed Postgres.
+
+The default app keeps bcrypt for compatibility and enforces bcrypt's 72-byte input limit. The Argon2id helper track is available for production teams that want a modern password hashing migration path.

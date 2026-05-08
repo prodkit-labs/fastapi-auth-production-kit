@@ -21,7 +21,7 @@ Use this checklist before adapting the kit for a real product.
 - Add resend limits and abuse monitoring for password reset requests.
 - Review session lifetime and refresh-token needs for your product.
 - Review [token strategy](token-strategy.md) before relying on stateless reset or verification tokens.
-- Enforce bcrypt's 72-byte input limit or move to an Argon2id hashing track.
+- Review [password hashing](password-hashing.md), enforce bcrypt's 72-byte input limit, or move new production passwords to the Argon2id track.
 - Add monitoring for spikes in failed login attempts.
 - Run dependency scanning in CI.
 

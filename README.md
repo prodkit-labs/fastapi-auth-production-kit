@@ -24,6 +24,7 @@ Ships today:
 - SQLite user store
 - SQLAlchemy/Postgres production track
 - Password hashing with `passlib`
+- Optional Argon2id password hashing track
 - JWT access tokens with `python-jose`
 - Protected `/me` route
 - Environment-driven settings
@@ -130,6 +131,7 @@ src/prodkit_auth/
 - [Security checklist](production/security-checklist.md)
 - [Deployment](production/deployment.md)
 - [Token strategy](production/token-strategy.md)
+- [Password hashing](production/password-hashing.md)
 - [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)
 - [Disclosure policy](production/disclosure.md)

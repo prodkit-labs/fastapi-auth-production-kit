@@ -22,10 +22,14 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "argon2-cffi>=23.1,<25",
   "httpx>=0.27",
   "pytest>=8.0",
   "ruff>=0.4",
   "sqlalchemy>=2.0",
+]
+argon2 = [
+  "argon2-cffi>=23.1,<25",
 ]
 postgres = [
   "psycopg[binary]>=3.2",
@@ -37,6 +41,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+filterwarnings = [
+  "ignore:Accessing argon2.__version__ is deprecated:DeprecationWarning:passlib.handlers.argon2",
+]
 
 [tool.ruff]
 line-length = 100
