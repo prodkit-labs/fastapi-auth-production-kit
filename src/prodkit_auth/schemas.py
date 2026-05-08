@@ -25,6 +25,19 @@ class PasswordResetRequestResponse(BaseModel):
     reset_token: str | None = None
 
 
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailVerificationConfirmRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=2048)
+
+
+class EmailVerificationRequestResponse(BaseModel):
+    message: str
+    verification_token: str | None = None
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -33,3 +46,4 @@ class TokenResponse(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
+    is_verified: bool = False

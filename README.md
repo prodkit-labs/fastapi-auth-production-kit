@@ -24,8 +24,9 @@ Ships today:
 - JWT access tokens with `python-jose`
 - Protected `/me` route
 - Environment-driven settings
+- Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
-- Pytest coverage for register, login, password reset, duplicate users, and protected routes
+- Pytest coverage for register, login, email verification, password reset, duplicate users, and protected routes
 - Production docs for deployment, provider comparison, security checklist, and disclosure
 
 ## Quickstart
@@ -61,6 +62,24 @@ curl -s http://127.0.0.1:8000/me \
   -H "authorization: Bearer $ACCESS_TOKEN"
 ```
 
+Request an email verification token for local development:
+
+```bash
+curl -s http://127.0.0.1:8000/auth/email-verification/request \
+  -H 'content-type: application/json' \
+  -d '{"email":"dev@example.com"}'
+```
+
+Confirm the email:
+
+```bash
+curl -s http://127.0.0.1:8000/auth/email-verification/confirm \
+  -H 'content-type: application/json' \
+  -d '{"token":"VERIFICATION_TOKEN"}'
+```
+
+The request endpoint returns `verification_token` by default so the local example is runnable without an email provider. Set `AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=false` before adapting the flow for production email delivery.
+
 Request a password reset token for local development:
 
 ```bash
@@ -83,7 +102,7 @@ The request endpoint returns `reset_token` by default so the local example is ru
 
 | Workflow | Command | Output |
 |---|---|---|
-| Test auth flow | `pytest` | Register/login/password-reset/protected-route coverage |
+| Test auth flow | `pytest` | Register/login/email-verification/password-reset/protected-route coverage |
 | Run API locally | `uvicorn prodkit_auth.main:app --reload` | Local FastAPI server |
 | Inspect OpenAPI | Open `/docs` | Interactive route docs |
 

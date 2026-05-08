@@ -4,6 +4,7 @@
 
 - Local email/password auth
 - JWT access tokens
+- Email verification with signed expiring tokens
 - Password reset with signed expiring tokens
 - Protected route
 - SQLite persistence
@@ -12,7 +13,6 @@
 
 ## Next
 
-- Email verification example
 - Refresh-token rotation example
 - SQLAlchemy/Postgres track
 - Rate-limit middleware example

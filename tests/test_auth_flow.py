@@ -6,7 +6,12 @@ from prodkit_auth.config import Settings, get_settings
 from prodkit_auth.main import create_app
 
 
-def make_client(tmp_path: Path) -> TestClient:
+def make_client(
+    tmp_path: Path,
+    *,
+    email_verification_token_minutes: int = 1440,
+    require_verified_email_for_login: bool = False,
+) -> TestClient:
     app = create_app()
 
     def settings_override() -> Settings:
@@ -16,6 +21,9 @@ def make_client(tmp_path: Path) -> TestClient:
             AUTH_ACCESS_TOKEN_MINUTES=15,
             AUTH_PASSWORD_RESET_TOKEN_MINUTES=15,
             AUTH_EXPOSE_RESET_TOKEN=True,
+            AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES=email_verification_token_minutes,
+            AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=True,
+            AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=require_verified_email_for_login,
         )
 
     app.dependency_overrides[get_settings] = settings_override
@@ -29,6 +37,7 @@ def test_register_login_and_read_current_user(tmp_path: Path) -> None:
     register_response = client.post("/auth/register", json=credentials)
     assert register_response.status_code == 201
     assert register_response.json()["email"] == "dev@example.com"
+    assert register_response.json()["is_verified"] is False
 
     login_response = client.post("/auth/login", json=credentials)
     assert login_response.status_code == 200
@@ -59,6 +68,120 @@ def test_login_rejects_bad_password(tmp_path: Path) -> None:
     response = client.post(
         "/auth/login",
         json={"email": "dev@example.com", "password": "wrong-password"},
+    )
+
+    assert response.status_code == 401
+
+
+def test_email_verification_marks_user_verified(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+
+    request_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+    assert request_response.status_code == 200
+    verification_token = request_response.json()["verification_token"]
+    assert verification_token
+
+    confirm_response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": verification_token},
+    )
+    assert confirm_response.status_code == 200
+    assert confirm_response.json()["is_verified"] is True
+
+    login_response = client.post("/auth/login", json=credentials)
+    token = login_response.json()["access_token"]
+    me_response = client.get("/me", headers={"authorization": f"Bearer {token}"})
+    assert me_response.json()["is_verified"] is True
+
+
+def test_verified_email_can_be_required_for_login(tmp_path: Path) -> None:
+    client = make_client(tmp_path, require_verified_email_for_login=True)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+
+    unverified_login = client.post("/auth/login", json=credentials)
+    assert unverified_login.status_code == 403
+
+    request_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+    client.post(
+        "/auth/email-verification/confirm",
+        json={"token": request_response.json()["verification_token"]},
+    )
+
+    verified_login = client.post("/auth/login", json=credentials)
+    assert verified_login.status_code == 200
+
+
+def test_email_verification_request_does_not_error_for_unknown_or_verified_email(
+    tmp_path: Path,
+) -> None:
+    client = make_client(tmp_path)
+
+    missing_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": "missing@example.com"},
+    )
+    assert missing_response.status_code == 200
+    assert missing_response.json()["verification_token"] is None
+
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+    client.post(
+        "/auth/email-verification/confirm",
+        json={"token": request_response.json()["verification_token"]},
+    )
+
+    verified_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+    assert verified_response.status_code == 200
+    assert verified_response.json()["verification_token"] is None
+
+
+def test_email_verification_rejects_invalid_and_wrong_purpose_tokens(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    login_response = client.post("/auth/login", json=credentials)
+
+    invalid_response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": "not-a-valid-token"},
+    )
+    assert invalid_response.status_code == 401
+
+    access_token_response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": login_response.json()["access_token"]},
+    )
+    assert access_token_response.status_code == 401
+
+
+def test_email_verification_rejects_expired_token(tmp_path: Path) -> None:
+    client = make_client(tmp_path, email_verification_token_minutes=-1)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+
+    response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": request_response.json()["verification_token"]},
     )
 
     assert response.status_code == 401

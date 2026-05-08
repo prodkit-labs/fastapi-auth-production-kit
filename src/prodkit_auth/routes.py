@@ -7,6 +7,9 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from prodkit_auth.config import Settings, get_settings
 from prodkit_auth.database import database_session
 from prodkit_auth.schemas import (
+    EmailVerificationConfirmRequest,
+    EmailVerificationRequest,
+    EmailVerificationRequestResponse,
     LoginRequest,
     PasswordResetConfirmRequest,
     PasswordResetRequest,
@@ -17,8 +20,10 @@ from prodkit_auth.schemas import (
 )
 from prodkit_auth.security import (
     create_access_token,
+    create_email_verification_token,
     create_password_reset_token,
     decode_access_token,
+    decode_email_verification_token,
     decode_password_reset_token,
 )
 from prodkit_auth.service import (
@@ -26,6 +31,8 @@ from prodkit_auth.service import (
     create_user,
     get_user_by_email,
     get_user_by_id,
+    is_user_verified,
+    mark_user_email_verified,
     update_user_password,
 )
 
@@ -44,7 +51,7 @@ def register(
     connection: sqlite3.Connection = Depends(get_database),
 ) -> UserResponse:
     user = create_user(connection, email=str(payload.email), password=payload.password)
-    return UserResponse(id=user["id"], email=user["email"])
+    return UserResponse(id=user["id"], email=user["email"], is_verified=is_user_verified(user))
 
 
 @router.post("/auth/login", response_model=TokenResponse)
@@ -59,6 +66,11 @@ def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
         )
+    if settings.require_verified_email_for_login and not is_user_verified(user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email verification is required before login.",
+        )
 
     token = create_access_token(
         subject=str(user["id"]),
@@ -67,6 +79,60 @@ def login(
         expires_minutes=settings.access_token_minutes,
     )
     return TokenResponse(access_token=token)
+
+
+@router.post("/auth/email-verification/request", response_model=EmailVerificationRequestResponse)
+def request_email_verification(
+    payload: EmailVerificationRequest,
+    settings: Settings = Depends(get_settings),
+    connection: sqlite3.Connection = Depends(get_database),
+) -> EmailVerificationRequestResponse:
+    user = get_user_by_email(connection, email=str(payload.email))
+    message = "If an account exists for this email, a verification link will be sent."
+    if user is None or is_user_verified(user):
+        return EmailVerificationRequestResponse(message=message)
+
+    verification_token = create_email_verification_token(
+        subject=str(user["id"]),
+        secret_key=settings.secret_key,
+        algorithm=settings.token_algorithm,
+        expires_minutes=settings.email_verification_token_minutes,
+    )
+    return EmailVerificationRequestResponse(
+        message=message,
+        verification_token=(
+            verification_token if settings.expose_email_verification_token else None
+        ),
+    )
+
+
+@router.post("/auth/email-verification/confirm", response_model=UserResponse)
+def confirm_email_verification(
+    payload: EmailVerificationConfirmRequest,
+    settings: Settings = Depends(get_settings),
+    connection: sqlite3.Connection = Depends(get_database),
+) -> UserResponse:
+    subject = decode_email_verification_token(
+        token=payload.token,
+        secret_key=settings.secret_key,
+        algorithm=settings.token_algorithm,
+    )
+    if subject is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired email verification token.",
+        )
+
+    try:
+        user_id = int(subject)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired email verification token.",
+        ) from exc
+
+    user = mark_user_email_verified(connection, user_id=user_id)
+    return UserResponse(id=user["id"], email=user["email"], is_verified=is_user_verified(user))
 
 
 @router.post("/auth/password-reset/request", response_model=PasswordResetRequestResponse)
@@ -137,7 +203,7 @@ def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
 
     user = get_user_by_id(connection, user_id=int(subject))
-    return UserResponse(id=user["id"], email=user["email"])
+    return UserResponse(id=user["id"], email=user["email"], is_verified=is_user_verified(user))
 
 
 @router.get("/me", response_model=UserResponse)
