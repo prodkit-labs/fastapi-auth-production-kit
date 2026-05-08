@@ -3,7 +3,7 @@
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-auth%20starter-009688)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
-![Tests](https://img.shields.io/badge/tests-pytest-46a2f1)
+[![Test](https://github.com/prodkit-labs/fastapi-auth-production-kit/actions/workflows/test.yml/badge.svg)](https://github.com/prodkit-labs/fastapi-auth-production-kit/actions/workflows/test.yml)
 
 A FastAPI starter for building authentication that survives the first production handoff.
 
