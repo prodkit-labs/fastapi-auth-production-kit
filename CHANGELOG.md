@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added optional SQLAlchemy/Postgres track with model, session pattern, production docs, and local SQLite-backed tests.
+
 ## v0.1.0 - Initial runnable auth kit
 
 First runnable release of FastAPI Auth Production Kit.

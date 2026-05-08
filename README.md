@@ -20,6 +20,7 @@ Ships today:
 
 - FastAPI app factory
 - SQLite user store
+- SQLAlchemy/Postgres production track
 - Password hashing with `passlib`
 - JWT access tokens with `python-jose`
 - Protected `/me` route
@@ -125,6 +126,7 @@ src/prodkit_auth/
 
 - [Security checklist](production/security-checklist.md)
 - [Deployment](production/deployment.md)
+- [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)
 - [Disclosure policy](production/disclosure.md)
 - [Roadmap](ROADMAP.md)

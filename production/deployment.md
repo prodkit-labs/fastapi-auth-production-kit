@@ -6,6 +6,7 @@ The local app uses SQLite because it keeps the first run simple. Production depl
 
 ```text
 AUTH_DATABASE_PATH=/data/prodkit-auth.sqlite3
+AUTH_DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE
 AUTH_SECRET_KEY=<long-random-secret>
 AUTH_ACCESS_TOKEN_MINUTES=30
 ```
@@ -18,6 +19,7 @@ AUTH_ACCESS_TOKEN_MINUTES=30
 - Run tests before every deploy.
 - Add rate limiting at the edge or application layer.
 - Record operational decisions in your own runbook.
+- Use the [SQLAlchemy and Postgres track](sqlalchemy-postgres.md) when auth data needs a managed database.
 
 ## Hosted Platform Fit
 
