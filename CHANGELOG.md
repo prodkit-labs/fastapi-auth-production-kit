@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added stateful auth action token store for single-use reset and verification hardening.
 - Added optional Argon2id password hashing track and password hashing guide.
 - Added repository security policy and LF formatting rules.
 - Added `AUTH_ENV=production` guard for unsafe local defaults.

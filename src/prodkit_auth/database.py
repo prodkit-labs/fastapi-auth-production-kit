@@ -10,6 +10,25 @@ CREATE TABLE IF NOT EXISTS users (
     verified_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS auth_action_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    purpose TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    used_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    request_ip_hash TEXT,
+    user_agent_hash TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_action_tokens_lookup
+ON auth_action_tokens (token_hash, purpose);
+
+CREATE INDEX IF NOT EXISTS idx_auth_action_tokens_user_purpose
+ON auth_action_tokens (user_id, purpose);
 """
 
 

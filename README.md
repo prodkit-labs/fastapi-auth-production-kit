@@ -31,6 +31,7 @@ Ships today:
 - Production settings guard for unsafe local defaults
 - Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
+- Stateful auth action token store for single-use hardening
 - Pytest coverage for register, login, email verification, password reset, duplicate users, and protected routes
 - Production docs for deployment, provider comparison, security checklist, and disclosure
 

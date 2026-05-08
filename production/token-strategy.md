@@ -23,7 +23,7 @@
 
 The current reset and verification flows are intentionally stateless. That keeps the local path easy to run, but it means tokens can be reused until they expire.
 
-For production-sensitive systems, add stateful token tables:
+For production-sensitive systems, use the stateful token store helpers. They generate a raw token once, store only a SHA-256 token hash, and mark the token used after a successful action.
 
 ```text
 auth_action_tokens
@@ -39,6 +39,29 @@ auth_action_tokens
 ```
 
 Only store token hashes. Return the token once, send it through email, and mark it used after a successful action.
+
+Helper path:
+
+```python
+from datetime import UTC, datetime, timedelta
+
+from prodkit_auth.service import create_auth_action_token, consume_auth_action_token
+
+raw_token, stored_token = create_auth_action_token(
+    connection,
+    user_id=user_id,
+    purpose="password_reset",
+    expires_at=datetime.now(UTC) + timedelta(minutes=15),
+)
+
+consumed_token = consume_auth_action_token(
+    connection,
+    token=raw_token,
+    purpose="password_reset",
+)
+```
+
+The current public routes still use stateless JWT action tokens for local simplicity. Use the stateful helpers when you need single-use reset or verification links.
 
 ## When To Use Hosted Auth
 
