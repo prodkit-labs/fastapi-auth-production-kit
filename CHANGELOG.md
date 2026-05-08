@@ -1,0 +1,26 @@
+# Changelog
+
+## v0.1.0 - Initial runnable auth kit
+
+First runnable release of FastAPI Auth Production Kit.
+
+Included:
+
+- FastAPI app factory and local API routes.
+- SQLite user store with a lightweight schema setup path.
+- Email/password registration and login.
+- JWT access tokens.
+- Protected `/me` route.
+- Email verification with signed expiring tokens.
+- Password reset with signed expiring tokens.
+- Local-development token preview settings for verification and reset flows.
+- Optional verified-email login policy.
+- Environment-driven settings through `.env`.
+- Pytest coverage for register, login, verification, reset, duplicate users, and protected routes.
+- GitHub Actions test workflow.
+- Production guides for security, deployment, provider comparison, and disclosure.
+
+Validation:
+
+- `ruff check .`
+- `pytest`
