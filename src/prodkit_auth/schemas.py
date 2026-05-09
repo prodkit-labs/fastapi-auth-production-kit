@@ -1,10 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-MAX_BCRYPT_PASSWORD_BYTES = 72
+from prodkit_auth.security import password_fits_bcrypt
 
 
 def validate_bcrypt_password_bytes(password: str) -> str:
-    if len(password.encode("utf-8")) > MAX_BCRYPT_PASSWORD_BYTES:
+    if not password_fits_bcrypt(password):
         raise ValueError("Password must be 72 bytes or fewer for bcrypt hashing.")
     return password
 
@@ -22,6 +22,11 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=256)
+
+    @field_validator("password")
+    @classmethod
+    def password_fits_bcrypt(cls, value: str) -> str:
+        return validate_bcrypt_password_bytes(value)
 
 
 class PasswordResetRequest(BaseModel):

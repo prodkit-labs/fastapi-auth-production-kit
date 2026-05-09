@@ -15,6 +15,13 @@ def test_bcrypt_hashing_still_verifies_password() -> None:
     assert verify_password_any("correct horse battery staple", password_hash)
 
 
+def test_bcrypt_verification_rejects_over_limit_password() -> None:
+    password_hash = hash_password("x" * 72)
+
+    assert not verify_password(("x" * 72) + "y", password_hash)
+    assert not verify_password_any(("x" * 72) + "y", password_hash)
+
+
 def test_argon2id_hashing_track_verifies_password() -> None:
     password_hash = hash_password_argon2id("correct horse battery staple")
 

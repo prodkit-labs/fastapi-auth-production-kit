@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 from prodkit_auth.config import Settings, get_settings, validate_production_settings
 from prodkit_auth.main import create_app
+from prodkit_auth.security import create_access_token
 
 
 def make_client(
@@ -106,6 +107,22 @@ def test_login_rejects_bad_password(tmp_path: Path) -> None:
     )
 
     assert response.status_code == 401
+
+
+def test_login_rejects_password_over_bcrypt_byte_limit(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    password = "x" * 72
+    client.post(
+        "/auth/register",
+        json={"email": "dev@example.com", "password": password},
+    )
+
+    response = client.post(
+        "/auth/login",
+        json={"email": "dev@example.com", "password": f"{password}y"},
+    )
+
+    assert response.status_code == 422
 
 
 def test_email_verification_marks_user_verified(tmp_path: Path) -> None:
@@ -226,6 +243,22 @@ def test_protected_route_requires_token(tmp_path: Path) -> None:
     client = make_client(tmp_path)
 
     response = client.get("/me")
+
+    assert response.status_code == 401
+
+
+def test_protected_route_rejects_signed_token_with_non_integer_subject(
+    tmp_path: Path,
+) -> None:
+    client = make_client(tmp_path)
+    token = create_access_token(
+        subject="not-an-int",
+        secret_key="test-secret",
+        algorithm="HS256",
+        expires_minutes=15,
+    )
+
+    response = client.get("/me", headers={"authorization": f"Bearer {token}"})
 
     assert response.status_code == 401
 
@@ -356,4 +389,16 @@ def test_production_settings_accept_safe_values() -> None:
         AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
     )
 
+    validate_production_settings(settings)
+
+
+def test_settings_accept_field_names() -> None:
+    settings = Settings(
+        environment="production",
+        secret_key="a-long-random-secret-value-for-production",
+        expose_reset_token=False,
+        expose_email_verification_token=False,
+    )
+
+    assert settings.environment == "production"
     validate_production_settings(settings)

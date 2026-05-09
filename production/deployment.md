@@ -5,8 +5,12 @@ The local app uses SQLite because it keeps the first run simple. Production depl
 ## Minimum Environment
 
 ```text
+# Used by the default SQLite app routes:
 AUTH_DATABASE_PATH=/data/prodkit-auth.sqlite3
+
+# Used by the optional SQLAlchemy/Postgres track, not by the default app routes yet:
 AUTH_DATABASE_URL=postgresql+psycopg://USER:PASSWORD@HOST:5432/DATABASE
+
 AUTH_SECRET_KEY=<long-random-secret>
 AUTH_ACCESS_TOKEN_MINUTES=30
 ```
@@ -16,6 +20,8 @@ AUTH_ACCESS_TOKEN_MINUTES=30
 - Put the app behind HTTPS.
 - Keep the secret key in the host's secret manager.
 - Use a persistent volume or managed database.
+- The default FastAPI routes use `AUTH_DATABASE_PATH`.
+- `AUTH_DATABASE_URL` belongs to the optional SQLAlchemy/Postgres track until the default routes add a database backend switch.
 - Run tests before every deploy.
 - Add rate limiting at the edge or application layer.
 - Record operational decisions in your own runbook.

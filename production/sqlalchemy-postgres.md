@@ -2,6 +2,8 @@
 
 The default app keeps a direct SQLite path so the first run is small and easy to inspect. Use this track when you are ready to move auth data into a production database.
 
+This track is not wired into the default FastAPI routes yet. The default routes use `AUTH_DATABASE_PATH`; `AUTH_DATABASE_URL` is consumed by this SQLAlchemy/Postgres track and should be treated as an optional production path until a backend switch is added.
+
 ## Install
 
 ```bash

@@ -212,7 +212,15 @@ def get_current_user(
     if subject is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
 
-    user = get_user_by_id(connection, user_id=int(subject))
+    try:
+        user_id = int(subject)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token.",
+        ) from exc
+
+    user = get_user_by_id(connection, user_id=user_id)
     return UserResponse(id=user["id"], email=user["email"], is_verified=is_user_verified(user))
 
 

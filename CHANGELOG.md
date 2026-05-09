@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## v0.2.1 - Runtime Audit Fixes
+
+- Fixed bcrypt login truncation by enforcing the 72-byte bcrypt input limit in login request parsing and password verification.
+- Aligned package and API version metadata with `v0.2.0`.
+- Clarified that `AUTH_DATABASE_URL` is for the optional SQLAlchemy/Postgres track and is not wired into default routes yet.
+- Fixed settings construction through field names and malformed access-token subjects returning 401.
+
 ## v0.2.0 - Auth Production Hardening
 
 Second release of FastAPI Auth Production Kit.

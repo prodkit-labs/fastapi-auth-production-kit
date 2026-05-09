@@ -44,6 +44,26 @@ def test_sqlalchemy_track_creates_and_authenticates_user(tmp_path: Path) -> None
         assert authenticated.verified_at is None
 
 
+def test_sqlalchemy_track_rejects_over_limit_login_password(tmp_path: Path) -> None:
+    session_factory = make_session_factory(tmp_path)
+    password = "x" * 72
+
+    with auth_session(session_factory) as session:
+        create_user_record(
+            session,
+            email="dev@example.com",
+            password=password,
+        )
+
+    with auth_session(session_factory) as session:
+        authenticated = authenticate_user_record(
+            session,
+            email="dev@example.com",
+            password=f"{password}y",
+        )
+        assert authenticated is None
+
+
 def test_sqlalchemy_track_rejects_duplicate_email(tmp_path: Path) -> None:
     session_factory = make_session_factory(tmp_path)
 

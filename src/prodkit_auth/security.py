@@ -6,13 +6,22 @@ from passlib.context import CryptContext
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 argon2id_context = CryptContext(schemes=["argon2"], deprecated="auto")
+MAX_BCRYPT_PASSWORD_BYTES = 72
+
+
+def password_fits_bcrypt(password: str) -> bool:
+    return len(password.encode("utf-8")) <= MAX_BCRYPT_PASSWORD_BYTES
 
 
 def hash_password(password: str) -> str:
+    if not password_fits_bcrypt(password):
+        raise ValueError("Password must be 72 bytes or fewer for bcrypt hashing.")
     return password_context.hash(password)
 
 
 def verify_password(password: str, password_hash: str) -> bool:
+    if not password_fits_bcrypt(password):
+        return False
     return password_context.verify(password, password_hash)
 
 
