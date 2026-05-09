@@ -116,9 +116,13 @@ Set `AUTH_ACTION_TOKEN_MODE=stateful` to make password reset tokens single-use t
 
 | Workflow | Command | Output |
 |---|---|---|
-| Test auth flow | `pytest` | Register/login/email-verification/password-reset/protected-route coverage |
-| Test stateful action tokens | `pytest tests/test_auth_action_tokens.py tests/test_auth_flow.py` | Single-use helper and route-mode coverage |
-| Test local rate limits | `pytest tests/test_rate_limited_auth.py tests/test_auth_flow.py` | Auth event helpers and opt-in route throttling |
+| Test full local auth path | `pytest` | Register/login/email-verification/password-reset/protected-route coverage |
+| Test password hashing | `pytest tests/test_password_hashing.py tests/test_auth_flow.py` | Bcrypt limit checks and optional Argon2id helper coverage |
+| Test stateful action token helpers | `pytest tests/test_auth_action_tokens.py` | Single-use reset and verification token storage helpers |
+| Test stateful action token routes | `pytest tests/test_auth_action_tokens.py tests/test_auth_flow.py` | Optional single-use route mode when `AUTH_ACTION_TOKEN_MODE=stateful` |
+| Test local rate-limit helpers | `pytest tests/test_rate_limited_auth.py` | Auth event recording, HMAC-hashed identifiers, and local cooldown checks |
+| Test opt-in route throttling | `pytest tests/test_rate_limited_auth.py tests/test_auth_flow.py` | Route-level demo behavior when `AUTH_LOCAL_RATE_LIMITS=true` |
+| Test SQLAlchemy/Postgres track | `pytest tests/test_sqlalchemy_track.py` | SQLAlchemy model, session pattern, and SQLite-backed local track coverage |
 | Run API locally | `uvicorn prodkit_auth.main:app --reload` | Local FastAPI server |
 | Inspect OpenAPI | Open `/docs` | Interactive route docs |
 

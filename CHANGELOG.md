@@ -8,6 +8,8 @@
   coverage.
 - Added explicit migration guidance for the SQLAlchemy/Postgres production
   track.
+- Refreshed README workflow commands for password hashing, stateful action
+  tokens, local rate limits, and the SQLAlchemy/Postgres track.
 
 ## v0.2.1 - Runtime Audit Fixes
 
