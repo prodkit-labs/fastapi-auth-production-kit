@@ -48,8 +48,18 @@ def get_database(settings: Settings = Depends(get_settings)) -> Iterator[sqlite3
 @router.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(
     payload: RegisterRequest,
+    settings: Settings = Depends(get_settings),
     connection: sqlite3.Connection = Depends(get_database),
 ) -> UserResponse:
+    if settings.registration_enumeration_mode == "generic":
+        normalized_email = str(payload.email).lower()
+        try:
+            create_user(connection, email=normalized_email, password=payload.password)
+        except HTTPException as exc:
+            if exc.status_code != status.HTTP_409_CONFLICT:
+                raise
+        return UserResponse(id=0, email=normalized_email, is_verified=False)
+
     user = create_user(connection, email=str(payload.email), password=payload.password)
     return UserResponse(id=user["id"], email=user["email"], is_verified=is_user_verified(user))
 

@@ -11,6 +11,7 @@ Use this checklist before adapting the kit for a real product.
 - Add rate limits to login and register routes.
 - Review [rate-limited auth](rate-limiting.md) before exposing auth endpoints publicly.
 - Add structured audit events for login attempts and account changes.
+- Review [anti-enumeration registration](anti-enumeration.md) and use `AUTH_REGISTRATION_ENUMERATION_MODE=generic` when duplicate registration responses should not reveal account existence.
 - Set an account access policy for unverified users.
 - Set `AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=false` outside local development.
 - Send verification links through an email service you can monitor.

@@ -29,6 +29,7 @@ Ships today:
 - Protected `/me` route
 - Environment-driven settings
 - Production settings guard for unsafe local defaults
+- Optional anti-enumeration registration response mode
 - Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
 - Stateful auth action token store for single-use hardening
@@ -134,6 +135,7 @@ src/prodkit_auth/
 - [Deployment](production/deployment.md)
 - [Token strategy](production/token-strategy.md)
 - [Password hashing](production/password-hashing.md)
+- [Anti-enumeration registration](production/anti-enumeration.md)
 - [Rate-limited auth](production/rate-limiting.md)
 - [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)

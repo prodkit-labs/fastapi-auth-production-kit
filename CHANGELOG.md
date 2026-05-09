@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added optional anti-enumeration registration response mode.
 - Added rate-limited auth lab with local event store and cooldown helpers.
 - Added stateful auth action token store for single-use reset and verification hardening.
 - Added optional Argon2id password hashing track and password hashing guide.

@@ -31,6 +31,10 @@ class Settings(BaseSettings):
         default=False,
         alias="AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN",
     )
+    registration_enumeration_mode: Literal["explicit", "generic"] = Field(
+        default="explicit",
+        alias="AUTH_REGISTRATION_ENUMERATION_MODE",
+    )
     token_algorithm: str = "HS256"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

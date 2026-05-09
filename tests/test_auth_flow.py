@@ -11,6 +11,7 @@ def make_client(
     *,
     email_verification_token_minutes: int = 1440,
     require_verified_email_for_login: bool = False,
+    registration_enumeration_mode: str = "explicit",
 ) -> TestClient:
     app = create_app()
 
@@ -24,6 +25,7 @@ def make_client(
             AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES=email_verification_token_minutes,
             AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=True,
             AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=require_verified_email_for_login,
+            AUTH_REGISTRATION_ENUMERATION_MODE=registration_enumeration_mode,
         )
 
     app.dependency_overrides[get_settings] = settings_override
@@ -56,6 +58,28 @@ def test_duplicate_email_returns_conflict(tmp_path: Path) -> None:
     response = client.post("/auth/register", json=credentials)
 
     assert response.status_code == 409
+
+
+def test_generic_registration_mode_normalizes_duplicate_email_response(
+    tmp_path: Path,
+) -> None:
+    client = make_client(tmp_path, registration_enumeration_mode="generic")
+    credentials = {"email": "Dev@Example.com", "password": "correct horse battery staple"}
+
+    first_response = client.post("/auth/register", json=credentials)
+    second_response = client.post("/auth/register", json=credentials)
+
+    assert first_response.status_code == 201
+    assert second_response.status_code == 201
+    assert first_response.json() == {
+        "id": 0,
+        "email": "dev@example.com",
+        "is_verified": False,
+    }
+    assert second_response.json() == first_response.json()
+
+    login_response = client.post("/auth/login", json=credentials)
+    assert login_response.status_code == 200
 
 
 def test_register_rejects_password_over_bcrypt_byte_limit(tmp_path: Path) -> None:
