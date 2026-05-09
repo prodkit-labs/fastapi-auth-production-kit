@@ -1,5 +1,6 @@
 import sqlite3
 from collections.abc import Iterator
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -28,6 +29,8 @@ from prodkit_auth.security import (
 )
 from prodkit_auth.service import (
     authenticate_user,
+    consume_auth_action_token,
+    create_auth_action_token,
     create_user,
     get_user_by_email,
     get_user_by_id,
@@ -39,10 +42,45 @@ from prodkit_auth.service import (
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=False)
 
+EMAIL_VERIFICATION_PURPOSE = "email_verification"
+PASSWORD_RESET_PURPOSE = "password_reset"
+
 
 def get_database(settings: Settings = Depends(get_settings)) -> Iterator[sqlite3.Connection]:
     with database_session(settings.database_path) as connection:
         yield connection
+
+
+def _expires_at(minutes: int) -> datetime:
+    return datetime.now(UTC) + timedelta(minutes=minutes)
+
+
+def _decode_action_token_subject(
+    *,
+    connection: sqlite3.Connection,
+    settings: Settings,
+    token: str,
+    purpose: str,
+) -> str | None:
+    if settings.action_token_mode == "stateful":
+        consumed_token = consume_auth_action_token(
+            connection,
+            token=token,
+            purpose=purpose,
+        )
+        return str(consumed_token["user_id"]) if consumed_token is not None else None
+
+    if purpose == EMAIL_VERIFICATION_PURPOSE:
+        return decode_email_verification_token(
+            token=token,
+            secret_key=settings.secret_key,
+            algorithm=settings.token_algorithm,
+        )
+    return decode_password_reset_token(
+        token=token,
+        secret_key=settings.secret_key,
+        algorithm=settings.token_algorithm,
+    )
 
 
 @router.post("/auth/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -102,12 +140,20 @@ def request_email_verification(
     if user is None or is_user_verified(user):
         return EmailVerificationRequestResponse(message=message)
 
-    verification_token = create_email_verification_token(
-        subject=str(user["id"]),
-        secret_key=settings.secret_key,
-        algorithm=settings.token_algorithm,
-        expires_minutes=settings.email_verification_token_minutes,
-    )
+    if settings.action_token_mode == "stateful":
+        verification_token, _ = create_auth_action_token(
+            connection,
+            user_id=user["id"],
+            purpose=EMAIL_VERIFICATION_PURPOSE,
+            expires_at=_expires_at(settings.email_verification_token_minutes),
+        )
+    else:
+        verification_token = create_email_verification_token(
+            subject=str(user["id"]),
+            secret_key=settings.secret_key,
+            algorithm=settings.token_algorithm,
+            expires_minutes=settings.email_verification_token_minutes,
+        )
     return EmailVerificationRequestResponse(
         message=message,
         verification_token=(
@@ -122,10 +168,11 @@ def confirm_email_verification(
     settings: Settings = Depends(get_settings),
     connection: sqlite3.Connection = Depends(get_database),
 ) -> UserResponse:
-    subject = decode_email_verification_token(
+    subject = _decode_action_token_subject(
+        connection=connection,
+        settings=settings,
         token=payload.token,
-        secret_key=settings.secret_key,
-        algorithm=settings.token_algorithm,
+        purpose=EMAIL_VERIFICATION_PURPOSE,
     )
     if subject is None:
         raise HTTPException(
@@ -156,12 +203,20 @@ def request_password_reset(
     if user is None:
         return PasswordResetRequestResponse(message=message)
 
-    reset_token = create_password_reset_token(
-        subject=str(user["id"]),
-        secret_key=settings.secret_key,
-        algorithm=settings.token_algorithm,
-        expires_minutes=settings.password_reset_token_minutes,
-    )
+    if settings.action_token_mode == "stateful":
+        reset_token, _ = create_auth_action_token(
+            connection,
+            user_id=user["id"],
+            purpose=PASSWORD_RESET_PURPOSE,
+            expires_at=_expires_at(settings.password_reset_token_minutes),
+        )
+    else:
+        reset_token = create_password_reset_token(
+            subject=str(user["id"]),
+            secret_key=settings.secret_key,
+            algorithm=settings.token_algorithm,
+            expires_minutes=settings.password_reset_token_minutes,
+        )
     return PasswordResetRequestResponse(
         message=message,
         reset_token=reset_token if settings.expose_reset_token else None,
@@ -174,10 +229,11 @@ def confirm_password_reset(
     settings: Settings = Depends(get_settings),
     connection: sqlite3.Connection = Depends(get_database),
 ) -> None:
-    subject = decode_password_reset_token(
+    subject = _decode_action_token_subject(
+        connection=connection,
+        settings=settings,
         token=payload.token,
-        secret_key=settings.secret_key,
-        algorithm=settings.token_algorithm,
+        purpose=PASSWORD_RESET_PURPOSE,
     )
     if subject is None:
         raise HTTPException(

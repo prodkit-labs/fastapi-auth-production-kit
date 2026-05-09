@@ -11,7 +11,9 @@ def make_client(
     tmp_path: Path,
     *,
     email_verification_token_minutes: int = 1440,
+    password_reset_token_minutes: int = 15,
     require_verified_email_for_login: bool = False,
+    action_token_mode: str = "jwt",
     registration_enumeration_mode: str = "explicit",
 ) -> TestClient:
     app = create_app()
@@ -21,11 +23,12 @@ def make_client(
             AUTH_DATABASE_PATH=str(tmp_path / "auth.sqlite3"),
             AUTH_SECRET_KEY="test-secret",
             AUTH_ACCESS_TOKEN_MINUTES=15,
-            AUTH_PASSWORD_RESET_TOKEN_MINUTES=15,
+            AUTH_PASSWORD_RESET_TOKEN_MINUTES=password_reset_token_minutes,
             AUTH_EXPOSE_RESET_TOKEN=True,
             AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES=email_verification_token_minutes,
             AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=True,
             AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=require_verified_email_for_login,
+            AUTH_ACTION_TOKEN_MODE=action_token_mode,
             AUTH_REGISTRATION_ENUMERATION_MODE=registration_enumeration_mode,
         )
 
@@ -239,6 +242,50 @@ def test_email_verification_rejects_expired_token(tmp_path: Path) -> None:
     assert response.status_code == 401
 
 
+def test_stateful_email_verification_token_is_single_use(tmp_path: Path) -> None:
+    client = make_client(tmp_path, action_token_mode="stateful")
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+    verification_token = request_response.json()["verification_token"]
+
+    first_response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": verification_token},
+    )
+    second_response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": verification_token},
+    )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 401
+
+
+def test_stateful_email_verification_rejects_expired_token(tmp_path: Path) -> None:
+    client = make_client(
+        tmp_path,
+        action_token_mode="stateful",
+        email_verification_token_minutes=-1,
+    )
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+
+    response = client.post(
+        "/auth/email-verification/confirm",
+        json={"token": request_response.json()["verification_token"]},
+    )
+
+    assert response.status_code == 401
+
+
 def test_protected_route_requires_token(tmp_path: Path) -> None:
     client = make_client(tmp_path)
 
@@ -334,19 +381,54 @@ def test_password_reset_rejects_new_password_over_bcrypt_byte_limit(tmp_path: Pa
 
 
 def test_password_reset_rejects_expired_token(tmp_path: Path) -> None:
-    app = create_app()
+    client = make_client(tmp_path, password_reset_token_minutes=-1)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
 
-    def settings_override() -> Settings:
-        return Settings(
-            AUTH_DATABASE_PATH=str(tmp_path / "auth.sqlite3"),
-            AUTH_SECRET_KEY="test-secret",
-            AUTH_ACCESS_TOKEN_MINUTES=15,
-            AUTH_PASSWORD_RESET_TOKEN_MINUTES=-1,
-            AUTH_EXPOSE_RESET_TOKEN=True,
-        )
+    response = client.post(
+        "/auth/password-reset/confirm",
+        json={
+            "token": request_response.json()["reset_token"],
+            "new_password": "new correct horse battery staple",
+        },
+    )
 
-    app.dependency_overrides[get_settings] = settings_override
-    client = TestClient(app)
+    assert response.status_code == 401
+
+
+def test_stateful_password_reset_token_is_single_use(tmp_path: Path) -> None:
+    client = make_client(tmp_path, action_token_mode="stateful")
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+    request_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
+    reset_token = request_response.json()["reset_token"]
+
+    first_response = client.post(
+        "/auth/password-reset/confirm",
+        json={"token": reset_token, "new_password": "new correct horse battery staple"},
+    )
+    second_response = client.post(
+        "/auth/password-reset/confirm",
+        json={"token": reset_token, "new_password": "another correct horse battery staple"},
+    )
+
+    assert first_response.status_code == 204
+    assert second_response.status_code == 401
+
+
+def test_stateful_password_reset_rejects_expired_token(tmp_path: Path) -> None:
+    client = make_client(
+        tmp_path,
+        action_token_mode="stateful",
+        password_reset_token_minutes=-1,
+    )
     credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
     client.post("/auth/register", json=credentials)
     request_response = client.post(

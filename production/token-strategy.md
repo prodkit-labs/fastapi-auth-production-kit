@@ -6,7 +6,8 @@
 - HS256 signing.
 - `sub` and `exp` claims on access tokens.
 - Separate `purpose` claims for email verification and password reset tokens.
-- Stateless verification and reset tokens for simple local development.
+- Stateless verification and reset tokens for simple local development by default.
+- Optional stateful route mode for single-use verification and reset tokens.
 
 ## Before Production
 
@@ -21,9 +22,15 @@
 
 ## Reset And Verification Tokens
 
-The current reset and verification flows are intentionally stateless. That keeps the local path easy to run, but it means tokens can be reused until they expire.
+The reset and verification flows default to stateless JWT action tokens. That keeps the local path easy to run, but it means tokens can be reused until they expire.
 
-For production-sensitive systems, use the stateful token store helpers. They generate a raw token once, store only a SHA-256 token hash, and mark the token used after a successful action.
+Set this when you want the built-in routes to use single-use local action tokens:
+
+```text
+AUTH_ACTION_TOKEN_MODE=stateful
+```
+
+In `stateful` mode, the routes generate a raw token once, store only a SHA-256 token hash, and mark the token used after a successful action.
 
 ```text
 auth_action_tokens
@@ -38,7 +45,7 @@ auth_action_tokens
   user_agent_hash
 ```
 
-Only store token hashes. Return the token once, send it through email, and mark it used after a successful action.
+Only token hashes are stored. Return the token once, send it through email, and mark it used after a successful action.
 
 Helper path:
 
@@ -61,7 +68,7 @@ consumed_token = consume_auth_action_token(
 )
 ```
 
-The current public routes still use stateless JWT action tokens for local simplicity. Use the stateful helpers when you need single-use reset or verification links.
+Use `AUTH_ACTION_TOKEN_MODE=jwt` when you want the simpler local stateless flow. Use `AUTH_ACTION_TOKEN_MODE=stateful` when you need single-use reset or verification links in the default routes.
 
 ## When To Use Hosted Auth
 

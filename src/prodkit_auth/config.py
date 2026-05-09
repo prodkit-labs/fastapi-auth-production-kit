@@ -31,6 +31,10 @@ class Settings(BaseSettings):
         default=False,
         alias="AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN",
     )
+    action_token_mode: Literal["jwt", "stateful"] = Field(
+        default="jwt",
+        alias="AUTH_ACTION_TOKEN_MODE",
+    )
     registration_enumeration_mode: Literal["explicit", "generic"] = Field(
         default="explicit",
         alias="AUTH_REGISTRATION_ENUMERATION_MODE",

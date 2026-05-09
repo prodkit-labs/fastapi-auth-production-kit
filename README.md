@@ -32,7 +32,7 @@ Ships today:
 - Optional anti-enumeration registration response mode
 - Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
-- Stateful auth action token store for single-use hardening
+- Optional stateful auth action token route mode for single-use hardening
 - Rate-limited auth lab for local abuse-protection experiments
 - Reusable auth workflow labs for production handoff decisions
 - Pytest coverage for register, login, email verification, password reset, duplicate users, and protected routes
@@ -89,6 +89,8 @@ curl -s http://127.0.0.1:8000/auth/email-verification/confirm \
 
 The request endpoint returns `verification_token` by default so the local example is runnable without an email provider. Set `AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=false` before adapting the flow for production email delivery.
 
+Set `AUTH_ACTION_TOKEN_MODE=stateful` to make email verification tokens single-use through the local `auth_action_tokens` store.
+
 Request a password reset token for local development:
 
 ```bash
@@ -107,11 +109,14 @@ curl -i http://127.0.0.1:8000/auth/password-reset/confirm \
 
 The request endpoint returns `reset_token` by default so the local example is runnable without an email provider. Set `AUTH_EXPOSE_RESET_TOKEN=false` before adapting the flow for production email delivery.
 
+Set `AUTH_ACTION_TOKEN_MODE=stateful` to make password reset tokens single-use through the local `auth_action_tokens` store.
+
 ## What You Can Run Today
 
 | Workflow | Command | Output |
 |---|---|---|
 | Test auth flow | `pytest` | Register/login/email-verification/password-reset/protected-route coverage |
+| Test stateful action tokens | `pytest tests/test_auth_action_tokens.py tests/test_auth_flow.py` | Single-use helper and route-mode coverage |
 | Run API locally | `uvicorn prodkit_auth.main:app --reload` | Local FastAPI server |
 | Inspect OpenAPI | Open `/docs` | Interactive route docs |
 

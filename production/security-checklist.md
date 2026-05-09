@@ -14,10 +14,12 @@ Use this checklist before adapting the kit for a real product.
 - Review [anti-enumeration registration](anti-enumeration.md) and use `AUTH_REGISTRATION_ENUMERATION_MODE=generic` when duplicate registration responses should not reveal account existence.
 - Set an account access policy for unverified users.
 - Set `AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=false` outside local development.
+- Use `AUTH_ACTION_TOKEN_MODE=stateful` when verification links must be single-use.
 - Send verification links through an email service you can monitor.
 - Add resend limits and abuse monitoring for email verification requests.
 - Add password reset flows only with signed, expiring tokens.
 - Set `AUTH_EXPOSE_RESET_TOKEN=false` outside local development.
+- Use `AUTH_ACTION_TOKEN_MODE=stateful` when reset links must be single-use.
 - Send reset links through an email service you can monitor.
 - Use a generic password reset response so requests do not reveal account existence.
 - Add resend limits and abuse monitoring for password reset requests.
