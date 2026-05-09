@@ -34,6 +34,7 @@ Ships today:
 - Password reset flow with signed expiring tokens
 - Stateful auth action token store for single-use hardening
 - Rate-limited auth lab for local abuse-protection experiments
+- Reusable auth workflow labs for production handoff decisions
 - Pytest coverage for register, login, email verification, password reset, duplicate users, and protected routes
 - Production docs for deployment, provider comparison, security checklist, and disclosure
 
@@ -131,6 +132,7 @@ src/prodkit_auth/
 
 ## Production Guides
 
+- [Auth production labs](labs/README.md)
 - [Security checklist](production/security-checklist.md)
 - [Deployment](production/deployment.md)
 - [Token strategy](production/token-strategy.md)

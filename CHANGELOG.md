@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added reusable auth production lab structure.
 - Expanded provider comparison categories and evidence labels.
 - Added optional anti-enumeration registration response mode.
 - Added rate-limited auth lab with local event store and cooldown helpers.
