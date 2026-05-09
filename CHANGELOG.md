@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.4.0 - Build Vs Buy Auth Decision Pack
 
 - Added a build-vs-buy auth decision guide for choosing between local auth,
   local hardening, and hosted identity providers.

@@ -11,6 +11,8 @@ Most auth examples stop at "register and login."
 
 This repo focuses on what teams need next: password hashing, JWT access tokens, route protection, SQLite persistence, testable settings, deployment notes, and decision guides for when to use hosted auth instead.
 
+Current release: `v0.4.0` - build-vs-buy auth decision pack.
+
 This kit helps you answer:
 
 - How should a small FastAPI app structure auth without spreading security logic everywhere?
