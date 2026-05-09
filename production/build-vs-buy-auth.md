@@ -93,6 +93,14 @@ If you move to hosted auth, document what the provider replaces and what your ap
 
 Use [provider comparison](provider-comparison.md) as a starting point, not as a ranking.
 
+Provider notes:
+
+- [Clerk migration note](provider-notes/clerk.md)
+- [Auth0 migration note](provider-notes/auth0.md)
+- [Supabase Auth migration note](provider-notes/supabase-auth.md)
+- [Logto migration note](provider-notes/logto.md)
+- [Resend email delivery note](provider-notes/resend.md)
+
 ## Commercial Links
 
 Do not add affiliate or partner links to this page until there is:

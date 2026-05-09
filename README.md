@@ -156,6 +156,12 @@ src/prodkit_auth/
 - [Rate-limited auth](production/rate-limiting.md)
 - [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)
+- Provider notes:
+  [Clerk](production/provider-notes/clerk.md),
+  [Auth0](production/provider-notes/auth0.md),
+  [Supabase Auth](production/provider-notes/supabase-auth.md),
+  [Logto](production/provider-notes/logto.md),
+  [Resend](production/provider-notes/resend.md)
 - [Disclosure policy](production/disclosure.md)
 - [Production handoff checklist template](docs/templates/production-handoff-checklist.md)
 - [Roadmap](ROADMAP.md)

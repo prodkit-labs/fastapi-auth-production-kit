@@ -9,6 +9,8 @@
 - Added a production handoff checklist template.
 - Added `MANIFEST.in` so source distributions include production docs, labs,
   templates, and repository governance files.
+- Added provider migration notes for Clerk, Auth0, Supabase Auth, Logto, and
+  Resend with official-doc source links and no commercial links.
 
 ## v0.3.1 - Consistency And Security Semantics Fixes
 

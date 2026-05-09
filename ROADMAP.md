@@ -41,6 +41,6 @@
 - Configuration reference
 - Data model reference
 - Production handoff checklist template
+- Provider migration notes for Clerk, Auth0, Supabase Auth, Logto, and Resend
 - Refresh-token rotation example
-- Provider migration notes for Clerk, Auth0, Supabase Auth, and Logto
 - Deployment examples for common FastAPI hosts
