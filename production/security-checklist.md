@@ -5,7 +5,10 @@ Use this checklist before adapting the kit for a real product.
 ## Required
 
 - Set a long random `AUTH_SECRET_KEY` outside source control.
+- Use at least 32 characters for `AUTH_SECRET_KEY`.
 - Set `AUTH_ENV=production` and confirm startup rejects unsafe local defaults.
+- Keep token TTL settings positive: `AUTH_ACCESS_TOKEN_MINUTES`, `AUTH_PASSWORD_RESET_TOKEN_MINUTES`, and `AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES`.
+- Set `AUTH_ALLOW_SQLITE_IN_PRODUCTION=true` only when you intentionally accept the default SQLite route path for a production deployment.
 - Use HTTPS in every non-local environment.
 - Store production data in a managed database with backups.
 - Add rate limits to login and register routes.

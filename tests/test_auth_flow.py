@@ -566,9 +566,99 @@ def test_production_settings_accept_safe_values() -> None:
         AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
         AUTH_EXPOSE_RESET_TOKEN=False,
         AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
     )
 
     validate_production_settings(settings)
+
+
+def test_production_settings_reject_short_secret() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="short-secret",
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
+    )
+
+    try:
+        validate_production_settings(settings)
+    except RuntimeError as exc:
+        assert "at least 32 characters" in str(exc)
+    else:
+        raise AssertionError("Expected production settings to reject short secret.")
+
+
+def test_production_settings_reject_non_positive_token_ttls() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_ACCESS_TOKEN_MINUTES=0,
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
+    )
+
+    try:
+        validate_production_settings(settings)
+    except RuntimeError as exc:
+        assert "AUTH_ACCESS_TOKEN_MINUTES" in str(exc)
+    else:
+        raise AssertionError("Expected production settings to reject non-positive TTL.")
+
+
+def test_production_settings_reject_non_positive_password_reset_ttl() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_PASSWORD_RESET_TOKEN_MINUTES=0,
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
+    )
+
+    try:
+        validate_production_settings(settings)
+    except RuntimeError as exc:
+        assert "AUTH_PASSWORD_RESET_TOKEN_MINUTES" in str(exc)
+    else:
+        raise AssertionError("Expected production settings to reject non-positive reset TTL.")
+
+
+def test_production_settings_reject_non_positive_email_verification_ttl() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES=0,
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
+    )
+
+    try:
+        validate_production_settings(settings)
+    except RuntimeError as exc:
+        assert "AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected production settings to reject non-positive verification TTL."
+        )
+
+
+def test_production_settings_require_explicit_sqlite_decision() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+    )
+
+    try:
+        validate_production_settings(settings)
+    except RuntimeError as exc:
+        assert "AUTH_ALLOW_SQLITE_IN_PRODUCTION" in str(exc)
+    else:
+        raise AssertionError("Expected production settings to require SQLite decision.")
 
 
 def test_settings_accept_field_names() -> None:
@@ -577,6 +667,7 @@ def test_settings_accept_field_names() -> None:
         secret_key="a-long-random-secret-value-for-production",
         expose_reset_token=False,
         expose_email_verification_token=False,
+        allow_sqlite_in_production=True,
     )
 
     assert settings.environment == "production"

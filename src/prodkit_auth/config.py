@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     )
     database_path: str = Field(default="./prodkit-auth.sqlite3", alias="AUTH_DATABASE_PATH")
     database_url: str | None = Field(default=None, alias="AUTH_DATABASE_URL")
+    allow_sqlite_in_production: bool = Field(
+        default=False,
+        alias="AUTH_ALLOW_SQLITE_IN_PRODUCTION",
+    )
     secret_key: str = Field(default="dev-only-change-me", alias="AUTH_SECRET_KEY")
     access_token_minutes: int = Field(default=30, alias="AUTH_ACCESS_TOKEN_MINUTES")
     password_reset_token_minutes: int = Field(
@@ -57,8 +61,26 @@ def validate_production_settings(settings: Settings) -> None:
     if settings.secret_key in {"dev-only-change-me", "change-me-before-production"}:
         raise RuntimeError("AUTH_SECRET_KEY must be changed in production.")
 
+    if len(settings.secret_key) < 32:
+        raise RuntimeError("AUTH_SECRET_KEY must be at least 32 characters in production.")
+
+    if settings.access_token_minutes <= 0:
+        raise RuntimeError("AUTH_ACCESS_TOKEN_MINUTES must be positive in production.")
+
+    if settings.password_reset_token_minutes <= 0:
+        raise RuntimeError("AUTH_PASSWORD_RESET_TOKEN_MINUTES must be positive in production.")
+
+    if settings.email_verification_token_minutes <= 0:
+        raise RuntimeError("AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES must be positive in production.")
+
     if settings.expose_reset_token:
         raise RuntimeError("AUTH_EXPOSE_RESET_TOKEN must be false in production.")
 
     if settings.expose_email_verification_token:
         raise RuntimeError("AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN must be false in production.")
+
+    if not settings.allow_sqlite_in_production:
+        raise RuntimeError(
+            "AUTH_ALLOW_SQLITE_IN_PRODUCTION must be true when the default SQLite routes "
+            "run in production."
+        )
