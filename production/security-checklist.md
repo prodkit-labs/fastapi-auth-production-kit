@@ -32,6 +32,7 @@ Use this checklist before adapting the kit for a real product.
 - Review [token strategy](token-strategy.md) before relying on stateless reset or verification tokens.
 - Use stateful auth action tokens when reset or verification links must be single-use.
 - Review [password hashing](password-hashing.md), enforce bcrypt's 72-byte input limit, or move new production passwords to the Argon2id track.
+- Keep bcrypt pinned below 5 while `passlib[bcrypt]` remains the default bcrypt compatibility layer.
 - Add monitoring for spikes in failed login attempts.
 - Run dependency scanning in CI.
 - Keep Dependabot enabled for Python dependencies and GitHub Actions updates.

@@ -1,3 +1,5 @@
+from importlib.metadata import version
+
 from prodkit_auth.security import (
     hash_password,
     hash_password_argon2id,
@@ -5,6 +7,12 @@ from prodkit_auth.security import (
     verify_password_any,
     verify_password_argon2id,
 )
+
+
+def test_bcrypt_dependency_stays_on_compatible_major_version() -> None:
+    bcrypt_major = int(version("bcrypt").split(".", maxsplit=1)[0])
+
+    assert bcrypt_major < 5
 
 
 def test_bcrypt_hashing_still_verifies_password() -> None:

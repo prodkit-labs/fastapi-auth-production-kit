@@ -28,6 +28,30 @@ Watch:
 
 - 72-byte input limit
 - migration planning if you later move to Argon2id
+- dependency compatibility while `passlib[bcrypt]` remains the bcrypt layer
+
+## Bcrypt Compatibility Policy
+
+The default path intentionally pins `bcrypt>=4.0,<5` while this repo uses
+`passlib[bcrypt]` for bcrypt hashing.
+
+`bcrypt` 5.0.0 changed long-password handling so `hashpw()` raises `ValueError`
+for passwords longer than 72 bytes instead of silently truncating them. The app
+already enforces bcrypt's 72-byte password limit before hashing or verification,
+but `passlib` 1.7.x also runs backend-detection checks internally. Those checks
+are not compatible with bcrypt 5.0.0 in the current stack.
+
+Current policy:
+
+- Keep `bcrypt>=4.0,<5` for the default local bcrypt path.
+- Keep the app-level 72-byte bcrypt input guard.
+- Keep Argon2id available as the forward-looking production helper track.
+- Do not merge automated bcrypt major-version bumps until the default bcrypt
+  layer changes or compatibility is proven across the Python test matrix.
+
+Dependabot is configured to ignore bcrypt 5.x updates for now. Revisit this
+policy when moving away from `passlib[bcrypt]`, upgrading to a compatible
+password hashing layer, or making Argon2id the default production path.
 
 ## Argon2id Track
 

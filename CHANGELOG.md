@@ -10,6 +10,9 @@
   track.
 - Refreshed README workflow commands for password hashing, stateful action
   tokens, local rate limits, and the SQLAlchemy/Postgres track.
+- Documented the bcrypt compatibility policy and configured Dependabot to avoid
+  bcrypt 5.x while `passlib[bcrypt]` remains the default bcrypt layer.
+- Allowed Argon2id helper installs to use `argon2-cffi` 25.x.
 
 ## v0.2.1 - Runtime Audit Fixes
 

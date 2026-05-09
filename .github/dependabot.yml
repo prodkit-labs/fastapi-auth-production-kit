@@ -9,6 +9,10 @@ updates:
       python-dependencies:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "bcrypt"
+        versions:
+          - ">=5"
 
   - package-ecosystem: "github-actions"
     directory: "/"
