@@ -4,6 +4,8 @@
 
 - Added access-token invalidation after password reset through a local
   `token_version` claim.
+- Added CI matrix, package build, dependency audit, and Dependabot maintenance
+  coverage.
 
 ## v0.2.1 - Runtime Audit Fixes
 
