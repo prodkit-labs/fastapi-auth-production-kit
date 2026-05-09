@@ -29,6 +29,21 @@ ON auth_action_tokens (token_hash, purpose);
 
 CREATE INDEX IF NOT EXISTS idx_auth_action_tokens_user_purpose
 ON auth_action_tokens (user_id, purpose);
+
+CREATE TABLE IF NOT EXISTS auth_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_type TEXT NOT NULL,
+    email_hash TEXT,
+    ip_hash TEXT,
+    occurred_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    metadata TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_events_type_email_time
+ON auth_events (event_type, email_hash, occurred_at);
+
+CREATE INDEX IF NOT EXISTS idx_auth_events_type_ip_time
+ON auth_events (event_type, ip_hash, occurred_at);
 """
 
 

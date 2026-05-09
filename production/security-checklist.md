@@ -9,6 +9,7 @@ Use this checklist before adapting the kit for a real product.
 - Use HTTPS in every non-local environment.
 - Store production data in a managed database with backups.
 - Add rate limits to login and register routes.
+- Review [rate-limited auth](rate-limiting.md) before exposing auth endpoints publicly.
 - Add structured audit events for login attempts and account changes.
 - Set an account access policy for unverified users.
 - Set `AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=false` outside local development.

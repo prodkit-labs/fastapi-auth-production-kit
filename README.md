@@ -32,6 +32,7 @@ Ships today:
 - Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
 - Stateful auth action token store for single-use hardening
+- Rate-limited auth lab for local abuse-protection experiments
 - Pytest coverage for register, login, email verification, password reset, duplicate users, and protected routes
 - Production docs for deployment, provider comparison, security checklist, and disclosure
 
@@ -133,6 +134,7 @@ src/prodkit_auth/
 - [Deployment](production/deployment.md)
 - [Token strategy](production/token-strategy.md)
 - [Password hashing](production/password-hashing.md)
+- [Rate-limited auth](production/rate-limiting.md)
 - [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)
 - [Disclosure policy](production/disclosure.md)

@@ -1,7 +1,8 @@
 import hashlib
+import json
 import secrets
 import sqlite3
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, status
 
@@ -9,6 +10,11 @@ from prodkit_auth.security import hash_password, verify_password
 
 AUTH_ACTION_TOKEN_BYTES = 32
 AUTH_ACTION_TOKEN_PURPOSES = {"email_verification", "password_reset"}
+AUTH_EVENT_TYPES = {
+    "email_verification_request",
+    "login_failed",
+    "password_reset_request",
+}
 
 
 def create_user(connection: sqlite3.Connection, *, email: str, password: str) -> sqlite3.Row:
@@ -88,6 +94,10 @@ def is_user_verified(user: sqlite3.Row) -> bool:
 
 def hash_auth_action_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def hash_rate_limit_key(value: str) -> str:
+    return hashlib.sha256(value.strip().lower().encode("utf-8")).hexdigest()
 
 
 def create_auth_action_token(
@@ -201,3 +211,112 @@ def consume_auth_action_token(
     )
     connection.commit()
     return get_auth_action_token_by_id(connection, token_id=row["id"])
+
+
+def record_auth_event(
+    connection: sqlite3.Connection,
+    *,
+    event_type: str,
+    email: str | None = None,
+    ip_address: str | None = None,
+    occurred_at: datetime | None = None,
+    metadata: dict[str, str] | None = None,
+) -> sqlite3.Row:
+    if event_type not in AUTH_EVENT_TYPES:
+        raise ValueError(f"Unsupported auth event type: {event_type}")
+
+    event_time = (occurred_at or datetime.now(UTC)).astimezone(UTC)
+    cursor = connection.execute(
+        """
+        INSERT INTO auth_events (
+            event_type,
+            email_hash,
+            ip_hash,
+            occurred_at,
+            metadata
+        )
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            event_type,
+            hash_rate_limit_key(email) if email else None,
+            hash_rate_limit_key(ip_address) if ip_address else None,
+            event_time.isoformat(),
+            json.dumps(metadata, sort_keys=True) if metadata else None,
+        ),
+    )
+    connection.commit()
+    return get_auth_event_by_id(connection, event_id=cursor.lastrowid)
+
+
+def get_auth_event_by_id(connection: sqlite3.Connection, *, event_id: int) -> sqlite3.Row:
+    event = connection.execute(
+        """
+        SELECT
+            id,
+            event_type,
+            email_hash,
+            ip_hash,
+            occurred_at,
+            metadata
+        FROM auth_events
+        WHERE id = ?
+        """,
+        (event_id,),
+    ).fetchone()
+    if event is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found.")
+    return event
+
+
+def count_auth_events(
+    connection: sqlite3.Connection,
+    *,
+    event_type: str,
+    since: datetime,
+    email: str | None = None,
+    ip_address: str | None = None,
+) -> int:
+    if event_type not in AUTH_EVENT_TYPES:
+        raise ValueError(f"Unsupported auth event type: {event_type}")
+    if email is None and ip_address is None:
+        raise ValueError("email or ip_address is required for auth event counting.")
+
+    filters = ["event_type = ?", "occurred_at >= ?"]
+    values: list[str] = [event_type, since.astimezone(UTC).isoformat()]
+    if email is not None:
+        filters.append("email_hash = ?")
+        values.append(hash_rate_limit_key(email))
+    if ip_address is not None:
+        filters.append("ip_hash = ?")
+        values.append(hash_rate_limit_key(ip_address))
+
+    row = connection.execute(
+        f"SELECT COUNT(*) AS total FROM auth_events WHERE {' AND '.join(filters)}",
+        tuple(values),
+    ).fetchone()
+    return int(row["total"])
+
+
+def is_auth_event_rate_limited(
+    connection: sqlite3.Connection,
+    *,
+    event_type: str,
+    limit: int,
+    window_seconds: int,
+    email: str | None = None,
+    ip_address: str | None = None,
+    now: datetime | None = None,
+) -> bool:
+    checked_at = now or datetime.now(UTC)
+    since = checked_at - timedelta(seconds=window_seconds)
+    return (
+        count_auth_events(
+            connection,
+            event_type=event_type,
+            since=since,
+            email=email,
+            ip_address=ip_address,
+        )
+        >= limit
+    )
