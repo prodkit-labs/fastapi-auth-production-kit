@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v0.2.0 - Auth Production Hardening
+
+Second release of FastAPI Auth Production Kit.
+
+This release turns the runnable auth starter into a stronger production handoff kit with safety guards, clearer security boundaries, password hashing guidance, abuse-protection helpers, provider comparison evidence labels, and reusable auth workflow labs.
+
+Included:
+
 - Added reusable auth production lab structure.
 - Expanded provider comparison categories and evidence labels.
 - Added optional anti-enumeration registration response mode.
@@ -13,6 +21,11 @@
 - Added bcrypt 72-byte password input enforcement.
 - Added token strategy and provider evidence notes.
 - Added optional SQLAlchemy/Postgres track with model, session pattern, production docs, and local SQLite-backed tests.
+
+Validation:
+
+- `ruff check .`
+- `pytest`
 
 ## v0.1.0 - Initial runnable auth kit
 
