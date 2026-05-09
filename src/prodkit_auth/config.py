@@ -31,6 +31,7 @@ class Settings(BaseSettings):
         default=False,
         alias="AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN",
     )
+    local_rate_limits: bool = Field(default=False, alias="AUTH_LOCAL_RATE_LIMITS")
     action_token_mode: Literal["jwt", "stateful"] = Field(
         default="jwt",
         alias="AUTH_ACTION_TOKEN_MODE",

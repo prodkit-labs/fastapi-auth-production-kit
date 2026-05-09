@@ -6,14 +6,15 @@ This lab covers local helpers for abuse-protection experiments around auth flows
 
 - `record_auth_event`
 - `count_auth_events`
-- `too_many_auth_events`
+- `is_auth_event_rate_limited`
 - Hashed email and IP identifiers
 - SQLite-backed `auth_events` storage
-- Local tests for failed login and request cooldown patterns
+- Optional route-level local throttling with `AUTH_LOCAL_RATE_LIMITS=true`
+- Local tests for failed login, registration, and request cooldown patterns
 
 ## What Is Simplified
 
-- Helpers are not wired into route middleware by default.
+- Route-level throttling is opt-in and disabled by default.
 - No distributed rate limiter is included.
 - No CAPTCHA or bot-management provider is included.
 - No alerting or dashboard is included.
@@ -30,6 +31,7 @@ This lab covers local helpers for abuse-protection experiments around auth flows
 ## Hardening Steps
 
 - Decide per-route limits for registration, login, verification request, and password reset request.
+- Use `AUTH_LOCAL_RATE_LIMITS=true` to exercise the local route-level demo.
 - Store counters in infrastructure that all app instances share.
 - Hash identifiers before storage.
 - Add structured audit events for account-sensitive changes.
@@ -39,6 +41,7 @@ This lab covers local helpers for abuse-protection experiments around auth flows
 ## Tests Included
 
 - `tests/test_rate_limited_auth.py`
+- `tests/test_auth_flow.py`
 
 ## Provider Handoff Options
 

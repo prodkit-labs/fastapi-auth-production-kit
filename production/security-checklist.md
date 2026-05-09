@@ -10,6 +10,7 @@ Use this checklist before adapting the kit for a real product.
 - Store production data in a managed database with backups.
 - Add rate limits to login and register routes.
 - Review [rate-limited auth](rate-limiting.md) before exposing auth endpoints publicly.
+- Use `AUTH_LOCAL_RATE_LIMITS=true` only as a local route-level demonstration; use shared infrastructure for distributed deployments.
 - Add structured audit events for login attempts and account changes.
 - Review [anti-enumeration registration](anti-enumeration.md) and use `AUTH_REGISTRATION_ENUMERATION_MODE=generic` when duplicate registration responses should not reveal account existence.
 - Set an account access policy for unverified users.

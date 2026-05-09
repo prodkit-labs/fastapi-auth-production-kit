@@ -19,7 +19,7 @@ Each lab answers the same production handoff questions:
 | [Email verification](email-verification/README.md) | Verification request and confirm flow | `/auth/email-verification/request`, `/auth/email-verification/confirm` |
 | [Password reset](password-reset/README.md) | Reset request and confirm flow | `/auth/password-reset/request`, `/auth/password-reset/confirm` |
 | [SQLAlchemy/Postgres](sqlalchemy-postgres/README.md) | Production persistence track | `prodkit_auth.sqlalchemy_track` |
-| [Rate-limited auth](rate-limited-auth/README.md) | Local abuse-protection helpers | `record_auth_event`, `too_many_auth_events` |
+| [Rate-limited auth](rate-limited-auth/README.md) | Local abuse-protection helpers | `AUTH_LOCAL_RATE_LIMITS`, `record_auth_event` |
 
 ## How To Use These Labs
 

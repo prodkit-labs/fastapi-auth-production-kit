@@ -8,6 +8,7 @@ This lab adds a local auth event store for abuse-protection experiments. It is n
 login_failed
 password_reset_request
 email_verification_request
+registration_attempt
 ```
 
 ## Local Event Store
@@ -46,11 +47,29 @@ blocked = is_auth_event_rate_limited(
 )
 ```
 
+## Opt-In Route Mode
+
+The default routes do not throttle requests unless local rate limits are enabled:
+
+```text
+AUTH_LOCAL_RATE_LIMITS=true
+```
+
+When enabled, the app records local `auth_events` rows and returns `429` for repeated attempts in these flows:
+
+- failed login attempts
+- registration attempts
+- password reset requests
+- email verification requests
+
+The built-in route policies are intentionally simple and SQLite-friendly. Keep them as a runnable model, then move production counters to shared infrastructure before running multiple app instances.
+
 ## Suggested Local Policies
 
 | Flow | Local policy example | Production handoff |
 |---|---|---|
 | Failed login | 5 attempts per email per 5 minutes | Add IP/device signals, alerting, and credential stuffing detection |
+| Registration | 3 attempts per email or IP per 5 minutes | Add abuse monitoring and support-safe duplicate account handling |
 | Password reset request | 1 request per email or IP per minute | Add email delivery telemetry and abuse monitoring |
 | Email verification resend | 1 request per email per minute | Add resend backoff and support-safe recovery path |
 

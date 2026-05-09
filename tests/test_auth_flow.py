@@ -13,6 +13,7 @@ def make_client(
     email_verification_token_minutes: int = 1440,
     password_reset_token_minutes: int = 15,
     require_verified_email_for_login: bool = False,
+    local_rate_limits: bool = False,
     action_token_mode: str = "jwt",
     registration_enumeration_mode: str = "explicit",
 ) -> TestClient:
@@ -28,6 +29,7 @@ def make_client(
             AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES=email_verification_token_minutes,
             AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=True,
             AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=require_verified_email_for_login,
+            AUTH_LOCAL_RATE_LIMITS=local_rate_limits,
             AUTH_ACTION_TOKEN_MODE=action_token_mode,
             AUTH_REGISTRATION_ENUMERATION_MODE=registration_enumeration_mode,
         )
@@ -62,6 +64,19 @@ def test_duplicate_email_returns_conflict(tmp_path: Path) -> None:
     response = client.post("/auth/register", json=credentials)
 
     assert response.status_code == 409
+
+
+def test_local_rate_limits_throttle_registration_attempts(tmp_path: Path) -> None:
+    client = make_client(tmp_path, local_rate_limits=True)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+
+    assert client.post("/auth/register", json=credentials).status_code == 201
+    assert client.post("/auth/register", json=credentials).status_code == 409
+    assert client.post("/auth/register", json=credentials).status_code == 409
+
+    throttled_response = client.post("/auth/register", json=credentials)
+
+    assert throttled_response.status_code == 429
 
 
 def test_generic_registration_mode_normalizes_duplicate_email_response(
@@ -126,6 +141,43 @@ def test_login_rejects_password_over_bcrypt_byte_limit(tmp_path: Path) -> None:
     )
 
     assert response.status_code == 422
+
+
+def test_local_rate_limits_throttle_failed_login_attempts(tmp_path: Path) -> None:
+    client = make_client(tmp_path, local_rate_limits=True)
+    client.post(
+        "/auth/register",
+        json={"email": "dev@example.com", "password": "correct horse battery staple"},
+    )
+
+    for _ in range(5):
+        response = client.post(
+            "/auth/login",
+            json={"email": "dev@example.com", "password": "wrong-password"},
+        )
+        assert response.status_code == 401
+
+    throttled_response = client.post(
+        "/auth/login",
+        json={"email": "dev@example.com", "password": "wrong-password"},
+    )
+
+    assert throttled_response.status_code == 429
+
+
+def test_local_rate_limits_are_disabled_by_default(tmp_path: Path) -> None:
+    client = make_client(tmp_path)
+    client.post(
+        "/auth/register",
+        json={"email": "dev@example.com", "password": "correct horse battery staple"},
+    )
+
+    for _ in range(6):
+        response = client.post(
+            "/auth/login",
+            json={"email": "dev@example.com", "password": "wrong-password"},
+        )
+        assert response.status_code == 401
 
 
 def test_email_verification_marks_user_verified(tmp_path: Path) -> None:
@@ -204,6 +256,24 @@ def test_email_verification_request_does_not_error_for_unknown_or_verified_email
     )
     assert verified_response.status_code == 200
     assert verified_response.json()["verification_token"] is None
+
+
+def test_local_rate_limits_throttle_email_verification_requests(tmp_path: Path) -> None:
+    client = make_client(tmp_path, local_rate_limits=True)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+
+    first_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+    second_response = client.post(
+        "/auth/email-verification/request",
+        json={"email": credentials["email"]},
+    )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 429
 
 
 def test_email_verification_rejects_invalid_and_wrong_purpose_tokens(tmp_path: Path) -> None:
@@ -350,6 +420,24 @@ def test_password_reset_request_does_not_error_for_unknown_email(tmp_path: Path)
 
     assert response.status_code == 200
     assert response.json()["reset_token"] is None
+
+
+def test_local_rate_limits_throttle_password_reset_requests(tmp_path: Path) -> None:
+    client = make_client(tmp_path, local_rate_limits=True)
+    credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
+    client.post("/auth/register", json=credentials)
+
+    first_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
+    second_response = client.post(
+        "/auth/password-reset/request",
+        json={"email": credentials["email"]},
+    )
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 429
 
 
 def test_password_reset_rejects_invalid_token(tmp_path: Path) -> None:

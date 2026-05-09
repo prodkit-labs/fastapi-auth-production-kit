@@ -29,6 +29,7 @@ Ships today:
 - Protected `/me` route
 - Environment-driven settings
 - Production settings guard for unsafe local defaults
+- Optional local route-level auth rate limits
 - Optional anti-enumeration registration response mode
 - Email verification flow with signed expiring tokens
 - Password reset flow with signed expiring tokens
@@ -117,6 +118,7 @@ Set `AUTH_ACTION_TOKEN_MODE=stateful` to make password reset tokens single-use t
 |---|---|---|
 | Test auth flow | `pytest` | Register/login/email-verification/password-reset/protected-route coverage |
 | Test stateful action tokens | `pytest tests/test_auth_action_tokens.py tests/test_auth_flow.py` | Single-use helper and route-mode coverage |
+| Test local rate limits | `pytest tests/test_rate_limited_auth.py tests/test_auth_flow.py` | Auth event helpers and opt-in route throttling |
 | Run API locally | `uvicorn prodkit_auth.main:app --reload` | Local FastAPI server |
 | Inspect OpenAPI | Open `/docs` | Interactive route docs |
 

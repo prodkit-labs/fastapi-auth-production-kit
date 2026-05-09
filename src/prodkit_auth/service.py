@@ -14,6 +14,7 @@ AUTH_EVENT_TYPES = {
     "email_verification_request",
     "login_failed",
     "password_reset_request",
+    "registration_attempt",
 }
 
 
