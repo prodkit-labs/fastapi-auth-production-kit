@@ -14,6 +14,7 @@ def make_client(
     password_reset_token_minutes: int = 15,
     require_verified_email_for_login: bool = False,
     local_rate_limits: bool = False,
+    event_hash_pepper: str = "test-event-hash-pepper-value-32-chars",
     action_token_mode: str = "jwt",
     registration_enumeration_mode: str = "explicit",
 ) -> TestClient:
@@ -30,6 +31,7 @@ def make_client(
             AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=True,
             AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN=require_verified_email_for_login,
             AUTH_LOCAL_RATE_LIMITS=local_rate_limits,
+            AUTH_EVENT_HASH_PEPPER=event_hash_pepper,
             AUTH_ACTION_TOKEN_MODE=action_token_mode,
             AUTH_REGISTRATION_ENUMERATION_MODE=registration_enumeration_mode,
         )
@@ -659,6 +661,39 @@ def test_production_settings_require_explicit_sqlite_decision() -> None:
         assert "AUTH_ALLOW_SQLITE_IN_PRODUCTION" in str(exc)
     else:
         raise AssertionError("Expected production settings to require SQLite decision.")
+
+
+def test_production_settings_require_event_hash_pepper_for_local_rate_limits() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
+        AUTH_LOCAL_RATE_LIMITS=True,
+        AUTH_EVENT_HASH_PEPPER="dev-only-event-hash-pepper",
+    )
+
+    try:
+        validate_production_settings(settings)
+    except RuntimeError as exc:
+        assert "AUTH_EVENT_HASH_PEPPER" in str(exc)
+    else:
+        raise AssertionError("Expected production settings to reject default event pepper.")
+
+
+def test_production_settings_accept_event_hash_pepper_for_local_rate_limits() -> None:
+    settings = Settings(
+        AUTH_ENV="production",
+        AUTH_SECRET_KEY="a-long-random-secret-value-for-production",
+        AUTH_EXPOSE_RESET_TOKEN=False,
+        AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN=False,
+        AUTH_ALLOW_SQLITE_IN_PRODUCTION=True,
+        AUTH_LOCAL_RATE_LIMITS=True,
+        AUTH_EVENT_HASH_PEPPER="a-long-random-event-hash-pepper-value",
+    )
+
+    validate_production_settings(settings)
 
 
 def test_settings_accept_field_names() -> None:

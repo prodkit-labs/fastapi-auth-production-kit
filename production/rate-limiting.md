@@ -23,6 +23,8 @@ The `auth_events` table stores:
 
 Email and IP values are hashed before storage. Keep raw request identifiers out of logs and database tables unless your product has a clear retention policy.
 
+Hashes use HMAC-SHA256 with `AUTH_EVENT_HASH_PEPPER`. Keep the pepper outside source control and rotate local demo data if it changes.
+
 ## Helpers
 
 ```python
@@ -53,6 +55,7 @@ The default routes do not throttle requests unless local rate limits are enabled
 
 ```text
 AUTH_LOCAL_RATE_LIMITS=true
+AUTH_EVENT_HASH_PEPPER=<long-random-pepper>
 ```
 
 When enabled, the app records local `auth_events` rows and returns `429` for repeated attempts in these flows:

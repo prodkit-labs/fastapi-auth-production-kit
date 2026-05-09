@@ -36,6 +36,10 @@ class Settings(BaseSettings):
         alias="AUTH_REQUIRE_VERIFIED_EMAIL_FOR_LOGIN",
     )
     local_rate_limits: bool = Field(default=False, alias="AUTH_LOCAL_RATE_LIMITS")
+    event_hash_pepper: str = Field(
+        default="dev-only-event-hash-pepper",
+        alias="AUTH_EVENT_HASH_PEPPER",
+    )
     action_token_mode: Literal["jwt", "stateful"] = Field(
         default="jwt",
         alias="AUTH_ACTION_TOKEN_MODE",
@@ -78,6 +82,15 @@ def validate_production_settings(settings: Settings) -> None:
 
     if settings.expose_email_verification_token:
         raise RuntimeError("AUTH_EXPOSE_EMAIL_VERIFICATION_TOKEN must be false in production.")
+
+    if settings.local_rate_limits and (
+        settings.event_hash_pepper == "dev-only-event-hash-pepper"
+        or len(settings.event_hash_pepper) < 32
+    ):
+        raise RuntimeError(
+            "AUTH_EVENT_HASH_PEPPER must be changed and at least 32 characters when "
+            "AUTH_LOCAL_RATE_LIMITS=true in production."
+        )
 
     if not settings.allow_sqlite_in_production:
         raise RuntimeError(

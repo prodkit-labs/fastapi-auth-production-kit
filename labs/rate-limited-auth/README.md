@@ -7,7 +7,7 @@ This lab covers local helpers for abuse-protection experiments around auth flows
 - `record_auth_event`
 - `count_auth_events`
 - `is_auth_event_rate_limited`
-- Hashed email and IP identifiers
+- HMAC-hashed email and IP identifiers
 - SQLite-backed `auth_events` storage
 - Optional route-level local throttling with `AUTH_LOCAL_RATE_LIMITS=true`
 - Local tests for failed login, registration, and request cooldown patterns
@@ -34,6 +34,7 @@ This lab covers local helpers for abuse-protection experiments around auth flows
 - Use `AUTH_LOCAL_RATE_LIMITS=true` to exercise the local route-level demo.
 - Store counters in infrastructure that all app instances share.
 - Hash identifiers before storage.
+- Keep `AUTH_EVENT_HASH_PEPPER` outside source control when local event storage is enabled.
 - Add structured audit events for account-sensitive changes.
 - Monitor spikes in failed login, reset, and verification requests.
 - Review [rate-limited auth](../../production/rate-limiting.md).

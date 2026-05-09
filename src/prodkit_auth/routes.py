@@ -71,6 +71,7 @@ def _request_ip(request: Request) -> str | None:
 def _is_rate_limited(
     connection: sqlite3.Connection,
     *,
+    settings: Settings,
     event_type: str,
     limit: int,
     window_seconds: int,
@@ -85,6 +86,7 @@ def _is_rate_limited(
             window_seconds=window_seconds,
             email=email if key == "email" else None,
             ip_address=ip_address if key == "ip" else None,
+            event_hash_pepper=settings.event_hash_pepper,
         )
         for key, value in (("email", email), ("ip", ip_address))
         if value is not None
@@ -114,6 +116,7 @@ def _record_auth_event_if_enabled(
         event_type=event_type,
         email=email,
         ip_address=ip_address,
+        event_hash_pepper=settings.event_hash_pepper,
         metadata=metadata,
     )
 
@@ -158,6 +161,7 @@ def register(
     if settings.local_rate_limits:
         if _is_rate_limited(
             connection,
+            settings=settings,
             event_type="registration_attempt",
             limit=REGISTRATION_LIMIT,
             window_seconds=REGISTRATION_WINDOW_SECONDS,
@@ -196,6 +200,7 @@ def login(
     ip_address = _request_ip(request)
     if settings.local_rate_limits and _is_rate_limited(
         connection,
+        settings=settings,
         event_type="login_failed",
         limit=LOGIN_FAILED_LIMIT,
         window_seconds=LOGIN_FAILED_WINDOW_SECONDS,
@@ -245,6 +250,7 @@ def request_email_verification(
     ip_address = _request_ip(request)
     if settings.local_rate_limits and _is_rate_limited(
         connection,
+        settings=settings,
         event_type="email_verification_request",
         limit=ACTION_REQUEST_LIMIT,
         window_seconds=ACTION_REQUEST_WINDOW_SECONDS,
@@ -329,6 +335,7 @@ def request_password_reset(
     ip_address = _request_ip(request)
     if settings.local_rate_limits and _is_rate_limited(
         connection,
+        settings=settings,
         event_type="password_reset_request",
         limit=ACTION_REQUEST_LIMIT,
         window_seconds=ACTION_REQUEST_WINDOW_SECONDS,
