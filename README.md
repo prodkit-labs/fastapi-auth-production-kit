@@ -142,6 +142,7 @@ src/prodkit_auth/
 - [Auth production labs](labs/README.md)
 - [Security checklist](production/security-checklist.md)
 - [Deployment](production/deployment.md)
+- [Migration path](production/migrations.md)
 - [Token strategy](production/token-strategy.md)
 - [Password hashing](production/password-hashing.md)
 - [Anti-enumeration registration](production/anti-enumeration.md)

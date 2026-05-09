@@ -33,6 +33,8 @@ This lab covers the production persistence track for teams that want to move bey
 - Add Alembic or your existing migration system.
 - Add backup, restore, and retention rules.
 - Review [SQLAlchemy and Postgres track](../../production/sqlalchemy-postgres.md).
+- Review the [migration path](../../production/migrations.md) before changing
+  live auth tables.
 - Decide when the route layer should move from the SQLite helper to the SQLAlchemy session pattern.
 
 ## Tests Included

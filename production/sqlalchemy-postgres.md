@@ -55,7 +55,13 @@ with auth_session(SessionLocal) as session:
 
 ## Migration Notes
 
-`initialize_auth_schema()` is intentionally small and useful for a first local run. For production, move schema changes into a migration tool such as Alembic before you change live tables.
+`initialize_auth_schema()` is intentionally small and useful for a first local
+run. It calls SQLAlchemy's table-creation path and should be treated as a demo
+and test helper, not as a production migration runner.
+
+For production, move schema changes into a migration tool such as Alembic before
+you change live tables. See the [migration path](migrations.md) for a staged
+adoption guide.
 
 Recommended migration order:
 

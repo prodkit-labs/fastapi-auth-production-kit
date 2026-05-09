@@ -26,6 +26,7 @@ AUTH_EMAIL_VERIFICATION_TOKEN_MINUTES=1440
 - The default FastAPI routes use `AUTH_DATABASE_PATH`.
 - Production startup requires `AUTH_ALLOW_SQLITE_IN_PRODUCTION=true` before running the default SQLite route path.
 - `AUTH_DATABASE_URL` belongs to the optional SQLAlchemy/Postgres track until the default routes add a database backend switch.
+- Do not rely on automatic table creation for production auth data; use the [migration path](migrations.md) before changing live tables.
 - Run tests before every deploy.
 - Add rate limiting at the edge or application layer.
 - Record operational decisions in your own runbook.
