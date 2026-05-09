@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## v0.3.0 - Auth Runtime Hardening
+
+This release hardens runtime auth behavior, dependency maintenance, and
+production handoff guidance for teams moving beyond a local auth starter.
+
+Included:
 
 - Added access-token invalidation after password reset through a local
   `token_version` claim.
@@ -13,6 +18,13 @@
 - Documented the bcrypt compatibility policy and configured Dependabot to avoid
   bcrypt 5.x while `passlib[bcrypt]` remains the default bcrypt layer.
 - Allowed Argon2id helper installs to use `argon2-cffi` 25.x.
+
+Validation:
+
+- `ruff check .`
+- `pytest -q`
+- `python -m build`
+- `python -m pip_audit --skip-editable`
 
 ## v0.2.1 - Runtime Audit Fixes
 
