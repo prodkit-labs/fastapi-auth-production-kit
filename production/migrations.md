@@ -39,7 +39,7 @@ real users.
    ```
 
 3. Configure `AUTH_DATABASE_URL` in your deployment secret manager.
-4. Generate an initial migration from the SQLAlchemy `User` model.
+4. Generate an initial migration from the SQLAlchemy `UserModel`.
 5. Review the migration file into source control.
 6. Run the migration against a staging database.
 7. Run the app test suite against the migrated staging database or an equivalent
@@ -61,9 +61,9 @@ alembic init migrations
 Then point Alembic at the SQLAlchemy metadata:
 
 ```python
-from prodkit_auth.sqlalchemy_track import Base
+from prodkit_auth.sqlalchemy_track import AuthBase
 
-target_metadata = Base.metadata
+target_metadata = AuthBase.metadata
 ```
 
 Use your environment's secret manager to provide the database URL at migration

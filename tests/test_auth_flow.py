@@ -707,3 +707,9 @@ def test_settings_accept_field_names() -> None:
 
     assert settings.environment == "production"
     validate_production_settings(settings)
+
+
+def test_settings_accept_token_algorithm_alias() -> None:
+    settings = Settings(AUTH_TOKEN_ALGORITHM="HS512")
+
+    assert settings.token_algorithm == "HS512"

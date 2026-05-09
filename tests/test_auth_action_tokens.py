@@ -62,6 +62,34 @@ def test_auth_action_token_is_single_use(tmp_path: Path) -> None:
         assert reused is None
 
 
+def test_auth_action_token_expired_consume_does_not_mark_used(tmp_path: Path) -> None:
+    with database_session(str(tmp_path / "auth.sqlite3")) as connection:
+        user = create_user(
+            connection,
+            email="dev@example.com",
+            password="correct horse battery staple",
+        )
+        raw_token, stored_token = create_auth_action_token(
+            connection,
+            user_id=user["id"],
+            purpose="password_reset",
+            expires_at=datetime.now(UTC) - timedelta(minutes=1),
+        )
+
+        consumed = consume_auth_action_token(
+            connection,
+            token=raw_token,
+            purpose="password_reset",
+        )
+        token_row = connection.execute(
+            "SELECT used_at FROM auth_action_tokens WHERE id = ?",
+            (stored_token["id"],),
+        ).fetchone()
+
+        assert consumed is None
+        assert token_row["used_at"] is None
+
+
 def test_auth_action_token_rejects_wrong_purpose(tmp_path: Path) -> None:
     with database_session(str(tmp_path / "auth.sqlite3")) as connection:
         user = create_user(

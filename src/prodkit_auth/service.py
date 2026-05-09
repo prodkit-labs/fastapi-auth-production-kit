@@ -193,7 +193,23 @@ def consume_auth_action_token(
 
     checked_at = (now or datetime.now(UTC)).astimezone(UTC)
     token_hash = hash_auth_action_token(token)
-    row = connection.execute(
+    used_at = checked_at.isoformat()
+    cursor = connection.execute(
+        """
+        UPDATE auth_action_tokens
+        SET used_at = ?
+        WHERE token_hash = ?
+          AND purpose = ?
+          AND used_at IS NULL
+          AND expires_at > ?
+        """,
+        (used_at, token_hash, purpose, checked_at.isoformat()),
+    )
+    connection.commit()
+    if cursor.rowcount != 1:
+        return None
+
+    return connection.execute(
         """
         SELECT
             id,
@@ -210,22 +226,6 @@ def consume_auth_action_token(
         """,
         (token_hash, purpose),
     ).fetchone()
-    if row is None or row["used_at"] is not None:
-        return None
-
-    expires_at = datetime.fromisoformat(row["expires_at"])
-    if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=UTC)
-    if expires_at <= checked_at:
-        return None
-
-    used_at = checked_at.isoformat()
-    connection.execute(
-        "UPDATE auth_action_tokens SET used_at = ? WHERE id = ?",
-        (used_at, row["id"]),
-    )
-    connection.commit()
-    return get_auth_action_token_by_id(connection, token_id=row["id"])
 
 
 def record_auth_event(

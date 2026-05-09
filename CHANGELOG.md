@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.3.1 - Consistency And Security Semantics Fixes
+
+- Made stateful auth action token consumption an atomic update before returning
+  the consumed row.
+- Fixed SQLAlchemy/Postgres lab and migration docs to use the actual
+  `UserModel` and `AuthBase` API names.
+- Added `AUTH_TOKEN_ALGORITHM` as the environment alias for token algorithm
+  configuration.
+- Clarified that `AUTH_ALLOW_SQLITE_IN_PRODUCTION` is an acknowledgement flag,
+  not a recommendation to use SQLite for production auth data.
+- Added proxy and IP trust-boundary notes to the rate-limiting guide.
+
 ## v0.3.0 - Auth Runtime Hardening
 
 This release hardens runtime auth behavior, dependency maintenance, and

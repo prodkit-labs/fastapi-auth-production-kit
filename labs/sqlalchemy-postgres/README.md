@@ -4,9 +4,11 @@ This lab covers the production persistence track for teams that want to move bey
 
 ## What Runs Locally
 
-- `prodkit_auth.sqlalchemy_track.User`
-- `prodkit_auth.sqlalchemy_track.create_engine_from_settings`
-- `prodkit_auth.sqlalchemy_track.session_scope`
+- `prodkit_auth.sqlalchemy_track.UserModel`
+- `prodkit_auth.sqlalchemy_track.database_url_from_settings`
+- `prodkit_auth.sqlalchemy_track.create_auth_engine`
+- `prodkit_auth.sqlalchemy_track.create_session_factory`
+- `prodkit_auth.sqlalchemy_track.auth_session`
 - SQLAlchemy-backed table creation in tests
 - SQLite-compatible local test path
 

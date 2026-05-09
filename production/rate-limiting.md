@@ -67,6 +67,16 @@ When enabled, the app records local `auth_events` rows and returns `429` for rep
 
 The built-in route policies are intentionally simple and SQLite-friendly. Keep them as a runnable model, then move production counters to shared infrastructure before running multiple app instances.
 
+## Proxy And IP Trust Boundary
+
+The local route helpers use `request.client.host` as the request IP. That is
+useful for local testing, but it may represent a proxy, load balancer, or edge
+network in production.
+
+Do not blindly trust `X-Forwarded-For` or similar headers unless your proxy chain
+is configured and trusted. In production, normalize client identity at the edge
+or in a dedicated middleware before using it for rate limits or audit events.
+
 ## Suggested Local Policies
 
 | Flow | Local policy example | Production handoff |

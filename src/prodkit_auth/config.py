@@ -48,7 +48,10 @@ class Settings(BaseSettings):
         default="explicit",
         alias="AUTH_REGISTRATION_ENUMERATION_MODE",
     )
-    token_algorithm: str = "HS256"
+    token_algorithm: Literal["HS256", "HS384", "HS512"] = Field(
+        default="HS256",
+        alias="AUTH_TOKEN_ALGORITHM",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
 
