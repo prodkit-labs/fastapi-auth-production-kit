@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Added a build-vs-buy auth decision guide for choosing between local auth,
+  local hardening, and hosted identity providers.
+- Added a configuration reference for environment-driven settings.
+- Added a data model reference for local SQLite tables and the SQLAlchemy track.
+- Added a production handoff checklist template.
+- Added `MANIFEST.in` so source distributions include production docs, labs,
+  templates, and repository governance files.
+
 ## v0.3.1 - Consistency And Security Semantics Fixes
 
 - Made stateful auth action token consumption an atomic update before returning

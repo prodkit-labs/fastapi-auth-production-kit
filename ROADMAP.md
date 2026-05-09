@@ -37,6 +37,10 @@
 
 ## Next
 
+- Build vs buy auth decision guide
+- Configuration reference
+- Data model reference
+- Production handoff checklist template
 - Refresh-token rotation example
 - Provider migration notes for Clerk, Auth0, Supabase Auth, and Logto
 - Deployment examples for common FastAPI hosts

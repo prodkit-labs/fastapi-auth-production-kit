@@ -144,8 +144,11 @@ src/prodkit_auth/
 ## Production Guides
 
 - [Auth production labs](labs/README.md)
+- [Build vs buy auth](production/build-vs-buy-auth.md)
 - [Security checklist](production/security-checklist.md)
 - [Deployment](production/deployment.md)
+- [Configuration](docs/configuration.md)
+- [Data model](docs/data-model.md)
 - [Migration path](production/migrations.md)
 - [Token strategy](production/token-strategy.md)
 - [Password hashing](production/password-hashing.md)
@@ -154,6 +157,7 @@ src/prodkit_auth/
 - [SQLAlchemy and Postgres track](production/sqlalchemy-postgres.md)
 - [Provider comparison](production/provider-comparison.md)
 - [Disclosure policy](production/disclosure.md)
+- [Production handoff checklist template](docs/templates/production-handoff-checklist.md)
 - [Roadmap](ROADMAP.md)
 
 ## Non-Goals

@@ -4,6 +4,8 @@ This repo starts with local email/password auth so the open-source path remains 
 
 Hosted auth can make sense when your product needs social login, enterprise identity, device/session management, admin consoles, or compliance-heavy audit trails.
 
+Start with [build vs buy auth](build-vs-buy-auth.md) when the decision is still unclear.
+
 ## Evidence Labels
 
 - `local`: covered by this repository's runnable examples and tests.
