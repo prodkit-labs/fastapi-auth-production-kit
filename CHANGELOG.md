@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added access-token invalidation after password reset through a local
+  `token_version` claim.
+
 ## v0.2.1 - Runtime Audit Fixes
 
 - Fixed bcrypt login truncation by enforcing the 72-byte bcrypt input limit in login request parsing and password verification.

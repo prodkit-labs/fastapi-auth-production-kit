@@ -10,12 +10,12 @@ This lab covers requesting and confirming password resets.
 - Local token preview through `AUTH_EXPOSE_RESET_TOKEN=true`
 - Generic request response for missing and existing accounts
 - Password update through the service layer
+- Access-token invalidation through `users.token_version`
 
 ## What Is Simplified
 
 - No email provider integration.
 - No email template rendering.
-- No request cooldown in the route handler.
 - No user notification after password changes.
 - Local token preview is enabled by default for a runnable demo.
 
@@ -24,7 +24,8 @@ This lab covers requesting and confirming password resets.
 - Reset tokens must not be returned in API responses.
 - Reset requests need per-email and per-IP cooldowns.
 - Stateless reset tokens cannot be revoked one by one.
-- Password changes may need to invalidate active sessions.
+- Password changes invalidate old local access tokens, but production apps may
+  also need refresh-token rotation and session-device management.
 - Account recovery can become an abuse path without monitoring.
 
 ## Hardening Steps
@@ -34,7 +35,8 @@ This lab covers requesting and confirming password resets.
 - Add cooldowns using the [rate-limited auth](../rate-limited-auth/README.md) lab.
 - Use stateful auth action tokens when reset links must be single-use.
 - Add post-reset notifications.
-- Decide whether password changes should bump a token version or revoke sessions.
+- Extend token-version invalidation with refresh-token/session revocation when
+  your app supports long-lived sessions.
 
 ## Tests Included
 

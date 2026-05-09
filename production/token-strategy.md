@@ -4,7 +4,7 @@
 
 - Short-lived bearer access tokens.
 - HS256 signing.
-- `sub` and `exp` claims on access tokens.
+- `sub`, `exp`, and `token_version` claims on access tokens.
 - Separate `purpose` claims for email verification and password reset tokens.
 - Stateless verification and reset tokens for simple local development by default.
 - Optional stateful route mode for single-use verification and reset tokens.
@@ -17,7 +17,8 @@
 - Add `iss` and `aud` when multiple services consume tokens.
 - Add `iat`, `nbf`, and `jti` when token replay or revocation matters.
 - Add refresh-token rotation when users need long sessions.
-- Add a server-side token version if password changes should invalidate active sessions.
+- Use the built-in server-side token version when password changes should
+  invalidate active sessions.
 - Store reset and verification token hashes server-side when single-use behavior is required.
 
 ## Reset And Verification Tokens
@@ -69,6 +70,15 @@ consumed_token = consume_auth_action_token(
 ```
 
 Use `AUTH_ACTION_TOKEN_MODE=jwt` when you want the simpler local stateless flow. Use `AUTH_ACTION_TOKEN_MODE=stateful` when you need single-use reset or verification links in the default routes.
+
+## Access Token Invalidation
+
+Access tokens include the user's current `token_version`. The `/me` route rejects
+tokens whose version no longer matches the database.
+
+Password reset confirmation increments `users.token_version`, so access tokens
+issued before the reset stop working. A user can log in with the new password to
+receive a fresh access token.
 
 ## When To Use Hosted Auth
 

@@ -45,10 +45,32 @@ def create_access_token(
     secret_key: str,
     algorithm: str,
     expires_minutes: int,
+    token_version: int = 0,
 ) -> str:
     expires_at = datetime.now(UTC) + timedelta(minutes=expires_minutes)
-    payload: dict[str, Any] = {"sub": subject, "exp": expires_at}
+    payload: dict[str, Any] = {
+        "sub": subject,
+        "exp": expires_at,
+        "token_version": token_version,
+    }
     return jwt.encode(payload, secret_key, algorithm=algorithm)
+
+
+def decode_access_token_claims(
+    *,
+    token: str,
+    secret_key: str,
+    algorithm: str,
+) -> tuple[str, int] | None:
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=[algorithm])
+    except JWTError:
+        return None
+    subject = payload.get("sub")
+    token_version = payload.get("token_version", 0)
+    if not isinstance(subject, str) or not isinstance(token_version, int):
+        return None
+    return subject, token_version
 
 
 def create_password_reset_token(
@@ -80,12 +102,12 @@ def create_email_verification_token(
 
 
 def decode_access_token(*, token: str, secret_key: str, algorithm: str) -> str | None:
-    try:
-        payload = jwt.decode(token, secret_key, algorithms=[algorithm])
-    except JWTError:
-        return None
-    subject = payload.get("sub")
-    return subject if isinstance(subject, str) else None
+    claims = decode_access_token_claims(
+        token=token,
+        secret_key=secret_key,
+        algorithm=algorithm,
+    )
+    return claims[0] if claims is not None else None
 
 
 def decode_password_reset_token(*, token: str, secret_key: str, algorithm: str) -> str | None:

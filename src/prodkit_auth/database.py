@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     verified_at TEXT,
+    token_version INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -62,6 +63,8 @@ def initialize_database(connection: sqlite3.Connection) -> None:
     }
     if "verified_at" not in columns:
         connection.execute("ALTER TABLE users ADD COLUMN verified_at TEXT")
+    if "token_version" not in columns:
+        connection.execute("ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0")
     connection.commit()
 
 

@@ -47,14 +47,22 @@ def authenticate_user(
 
 def get_user_by_email(connection: sqlite3.Connection, *, email: str) -> sqlite3.Row | None:
     return connection.execute(
-        "SELECT id, email, password_hash, verified_at FROM users WHERE email = ?",
+        """
+        SELECT id, email, password_hash, verified_at, token_version
+        FROM users
+        WHERE email = ?
+        """,
         (email.lower(),),
     ).fetchone()
 
 
 def get_user_by_id(connection: sqlite3.Connection, *, user_id: int) -> sqlite3.Row:
     user = connection.execute(
-        "SELECT id, email, password_hash, verified_at FROM users WHERE id = ?",
+        """
+        SELECT id, email, password_hash, verified_at, token_version
+        FROM users
+        WHERE id = ?
+        """,
         (user_id,),
     ).fetchone()
     if user is None:
@@ -69,7 +77,7 @@ def update_user_password(
     new_password: str,
 ) -> None:
     cursor = connection.execute(
-        "UPDATE users SET password_hash = ? WHERE id = ?",
+        "UPDATE users SET password_hash = ?, token_version = token_version + 1 WHERE id = ?",
         (hash_password(new_password), user_id),
     )
     connection.commit()

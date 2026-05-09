@@ -23,7 +23,7 @@ from prodkit_auth.security import (
     create_access_token,
     create_email_verification_token,
     create_password_reset_token,
-    decode_access_token,
+    decode_access_token_claims,
     decode_email_verification_token,
     decode_password_reset_token,
 )
@@ -229,6 +229,7 @@ def login(
         secret_key=settings.secret_key,
         algorithm=settings.token_algorithm,
         expires_minutes=settings.access_token_minutes,
+        token_version=int(user["token_version"]),
     )
     return TokenResponse(access_token=token)
 
@@ -406,14 +407,15 @@ def get_current_user(
     if credentials is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing token.")
 
-    subject = decode_access_token(
+    claims = decode_access_token_claims(
         token=credentials.credentials,
         secret_key=settings.secret_key,
         algorithm=settings.token_algorithm,
     )
-    if subject is None:
+    if claims is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
 
+    subject, token_version = claims
     try:
         user_id = int(subject)
     except ValueError as exc:
@@ -423,6 +425,8 @@ def get_current_user(
         ) from exc
 
     user = get_user_by_id(connection, user_id=user_id)
+    if token_version != int(user["token_version"]):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
     return UserResponse(id=user["id"], email=user["email"], is_verified=is_user_verified(user))
 
 

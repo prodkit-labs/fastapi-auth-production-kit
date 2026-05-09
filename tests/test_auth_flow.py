@@ -385,6 +385,8 @@ def test_password_reset_changes_password(tmp_path: Path) -> None:
     credentials = {"email": "dev@example.com", "password": "correct horse battery staple"}
     new_password = "new correct horse battery staple"
     client.post("/auth/register", json=credentials)
+    before_reset_login = client.post("/auth/login", json=credentials)
+    before_reset_token = before_reset_login.json()["access_token"]
 
     request_response = client.post(
         "/auth/password-reset/request",
@@ -408,6 +410,13 @@ def test_password_reset_changes_password(tmp_path: Path) -> None:
         json={"email": credentials["email"], "password": new_password},
     )
     assert new_login.status_code == 200
+    new_token = new_login.json()["access_token"]
+
+    old_me_response = client.get("/me", headers={"authorization": f"Bearer {before_reset_token}"})
+    new_me_response = client.get("/me", headers={"authorization": f"Bearer {new_token}"})
+
+    assert old_me_response.status_code == 401
+    assert new_me_response.status_code == 200
 
 
 def test_password_reset_request_does_not_error_for_unknown_email(tmp_path: Path) -> None:
